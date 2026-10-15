@@ -10,14 +10,20 @@
 
 | Élément | État | Où |
 |---|---|---|
+| **Dépôt GitHub `motiq`** — historique complet poussé et vérifié | **livré** | https://github.com/abdiomande19-cloud/motiq |
 | Analyse d'entrée + périmètre + arbitrages | livré | `PHASE-1-ETAT.md` |
 | Design system (liquid glass, mode clair et sombre) | livré | `maquettes/_build/design-system.css` |
 | **13 écrans HTML autonomes** couvrant le parcours complet | livré | `maquettes/01-…` à `maquettes/13-…` |
 | Index de navigation des 13 écrans | livré | `maquettes/index.html` |
 | Générateur des maquettes (sources reproductibles) | livré | `maquettes/_build/` |
 | Captures d'écran des écrans validés | livré | `maquettes/_captures/` |
-| **Historique git : 23 commits, un par fonctionnalité et un par écran** | livré | dépôt local `C:\Users\Diomande\Motiq` |
+| **Historique git : un commit par fonctionnalité et un par écran** | livré | dépôt local `C:\Users\Diomande\Motiq` |
 | **Dépôt complet en un seul fichier** (livrable de secours) | livré | `motiq.bundle` (1,98 Mo, vérifié) |
+| **Archive de remise** | livré | `Motiq-livraison.zip` (2,09 Mo) |
+
+**Preuve du dépôt distant** : le commit local et la référence distante portent le même
+SHA — `8f4d29baa02a267117b4da8de296b0e050d764fe` — et l'API GitHub confirme l'historique
+complet de la branche `main`.
 
 **Conformité au mode de travail demandé** : travail phase par phase, aucun passage à la
 phase suivante sans validation, un commit descriptif par fonctionnalité, aucune clé
@@ -38,17 +44,20 @@ génération → éditeur → aperçu → export MP4.
 
 | Point | Qui | Pourquoi |
 |---|---|---|
-| Créer le dépôt distant `motiq` et pousser | humain + agent | le jeton actuel n'a pas la permission *Administration* et ne couvre que 2 dépôts existants |
-| Identité de commit | humain | les 21 commits sont signés `abdiomande19-cloud <…@users.noreply.github.com>` |
+| Identité de commit | humain | les commits sont signés `abdiomande19-cloud <…@users.noreply.github.com>` (adresse anonyme GitHub) |
+| Sort du jeton GitHub de livraison | humain | portée `repo` (écriture complète) valable 7 jours : à révoquer si vous n'en avez plus besoin |
 | Phase 2 — développement réel (Supabase, Vercel, Stripe, transcription, rendu vidéo) | Application Builder | dépend d'identifiants de production, non fournis à ce jour |
 
 ## 4. POINTS À VALIDER
 
 1. **Les 13 maquettes** : validez l'interface avant tout développement.
-2. **Les trois fichiers parasites** `forme`, `la`, `pour` (artefacts d'une erreur de ma
-   part dans un lanceur `.bat`) : **supprimés** — du disque, du commit courant et de
-   tout l'historique — après votre accord. Le lanceur `.bat` est corrigé et re-committé.
+2. **Visibilité du dépôt** : `motiq` a été créé **PUBLIC** (et non privé comme prévu).
+   À basculer en privé si le projet ne doit pas être visible — *Settings → General →
+   Danger Zone → Change visibility*.
 3. **L'identité des commits** : vraie identité ou adresse anonyme GitHub ?
+4. **Les trois fichiers parasites** `forme`, `la`, `pour` (artefacts d'une erreur de
+   l'agent dans un lanceur `.bat`) : **supprimés** — du disque, du commit courant et de
+   tout l'historique — après votre accord. Le lanceur `.bat` est corrigé et re-committé.
 
 ## 5. LIMITES — CE QUI N'EST PAS FAIT ET NE SERA PAS PRÉTENDU
 
