@@ -16,7 +16,7 @@
 | Index de navigation des 13 écrans | livré | `maquettes/index.html` |
 | Générateur des maquettes (sources reproductibles) | livré | `maquettes/_build/` |
 | Captures d'écran des écrans validés | livré | `maquettes/_captures/` |
-| **Historique git : 21 commits, un par fonctionnalité et un par écran** | livré | dépôt local `C:\Users\Diomande\Motiq` |
+| **Historique git : 23 commits, un par fonctionnalité et un par écran** | livré | dépôt local `C:\Users\Diomande\Motiq` |
 | **Dépôt complet en un seul fichier** (livrable de secours) | livré | `motiq.bundle` (1,98 Mo, vérifié) |
 
 **Conformité au mode de travail demandé** : travail phase par phase, aucun passage à la
@@ -45,9 +45,9 @@ génération → éditeur → aperçu → export MP4.
 ## 4. POINTS À VALIDER
 
 1. **Les 13 maquettes** : validez l'interface avant tout développement.
-2. **Les trois fichiers parasites** `forme`, `la`, `pour` (40-67 octets, artefacts d'une
-   erreur de ma part dans un lanceur `.bat`) : retirés du dépôt, encore sur le disque,
-   **en attente de votre accord pour suppression** (règle DELETE).
+2. **Les trois fichiers parasites** `forme`, `la`, `pour` (artefacts d'une erreur de ma
+   part dans un lanceur `.bat`) : **supprimés** — du disque, du commit courant et de
+   tout l'historique — après votre accord. Le lanceur `.bat` est corrigé et re-committé.
 3. **L'identité des commits** : vraie identité ou adresse anonyme GitHub ?
 
 ## 5. LIMITES — CE QUI N'EST PAS FAIT ET NE SERA PAS PRÉTENDU
