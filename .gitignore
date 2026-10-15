@@ -23,6 +23,11 @@ out/
 logs/
 *.log
 
+# Donnees locales de developpement (implementation locale, decision D2)
+.donnees/
+next-env.d.ts
+*.tsbuildinfo
+
 # Système
 .DS_Store
 Thumbs.db

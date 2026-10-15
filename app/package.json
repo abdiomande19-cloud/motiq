@@ -1,0 +1,26 @@
+{
+  "name": "motiq-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motiq — application de creation de videos motion design (LAB 04, phase 2 : socle)",
+  "author": "Aboubakr Diomande",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "verifier-types": "tsc --noEmit"
+  },
+  "keywords": [],
+  "dependencies": {
+    "next": "^16.4.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}
