@@ -12,30 +12,38 @@
  */
 
 import { DepotLocal } from './local'
+import { DepotSupabase } from './supabase'
 import type { DepotMotiq } from './repository'
 
 let instance: DepotMotiq | null = null
 
 /**
- * Choisit l'implementation.
+ * Choisit l'implementation, dans cet ordre :
  *
- * Aujourd'hui, seule l'implementation locale existe. La bascule Supabase sera
- * ajoutee ici, en une seule fonction, quand SUPABASE_URL et les cles seront
- * presentes dans l'environnement serveur. En attendant, on ne simule rien :
- * on utilise explicitement le local.
+ *  1. Supabase, si l'URL du projet et la cle secrete sont presentes dans
+ *     l'environnement serveur. C'est le mode normal des que la base existe.
+ *  2. Sinon, l'implementation locale sur fichier JSON : le socle doit pouvoir
+ *     demarrer sans aucun identifiant (developpement, demonstration).
+ *
+ * `DepotSupabase` importe « server-only » : si un composant client tentait de
+ * l'importer, la compilation echouerait — au lieu de laisser fuir la cle secrete
+ * dans le navigateur.
  */
 export function obtenirDepot(): DepotMotiq {
   if (instance) return instance
 
-  const urlSupabase = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const cle = process.env.SUPABASE_SECRET_KEY
 
-  if (urlSupabase) {
-    // Volontairement non implemente a ce stade : pas de fausse promesse.
-    // Le socle continue de fonctionner sur le local tant que la phase 2
-    // n'est pas terminee.
+  if (url && cle) {
+    instance = new DepotSupabase(url, cle)
+    return instance
+  }
+
+  if (url || cle) {
     console.warn(
-      '[Motiq] SUPABASE_URL est definie, mais l implementation Supabase n est pas ' +
-        'encore branchee. Le depot local est utilise. Voir le plan de phases.',
+      '[Motiq] Configuration Supabase incomplete (URL ou cle manquante) : ' +
+        'le depot local est utilise. Voir la page /etat.',
     )
   }
 

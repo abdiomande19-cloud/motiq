@@ -30,8 +30,10 @@ Aucun identifiant n'est nécessaire : le socle démarre sur une couche de donné
 | Page d'état du projet | `app/etat/page.tsx` | ✅ |
 | Types du domaine | `lib/data/types.ts` | ✅ conformes au chapitre 10.3 |
 | Contrat d'accès aux données | `lib/data/repository.ts` | ✅ |
-| Implémentation locale | `lib/data/local.ts` | ✅ fichier JSON dans `.donnees/` |
-| Choix de l'implémentation | `lib/data/index.ts` | ✅ point de bascule unique vers Supabase |
+| Implémentation locale | `lib/data/local.ts` | ✅ fichier JSON dans `.donnees/` — démarre sans aucun identifiant |
+| **Implémentation Supabase** | `lib/data/supabase.ts` | ✅ **branchée sur le projet `motiq`** (Europe de l'Ouest) |
+| Choix de l'implémentation | `lib/data/index.ts` | ✅ bascule automatique selon l'environnement |
+| Schéma de la base | `supabase/migrations/` | ✅ 8 tables, RLS, stockage, déclencheurs |
 | Manifeste PWA | `public/manifest.webmanifest` | 🟡 posé, installation à finaliser |
 
 ---
@@ -54,8 +56,8 @@ identifiants Supabase arriveront, **seul `lib/data/index.ts` changera** — les
 
 ## Ce qui n'est PAS encore branché
 
-- **Authentification** (email + Google) → attend Supabase
-- **Stockage des médias** (images, audio, vidéo) → attend Supabase Storage
+- **Authentification** (email + Google) → la base est prête (`profiles` + RLS), l'écran reste à câbler
+- **Stockage des médias** (images, audio, vidéo) → le bucket privé `medias` existe, l'envoi reste à câbler
 - **Transcription des notes vocales** → attend un service de transcription
 - **Génération du script** par IA → attend une clé Anthropic
 - **Rendu vidéo** → attend un worker Remotion (le cahier des charges interdit le rendu dans le navigateur)

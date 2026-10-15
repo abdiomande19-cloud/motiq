@@ -10,21 +10,30 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * Identifiant bien forme mais inexistant. Il permet de prouver que la lecture
+ * fonctionne de bout en bout SANS inventer de donnees : la requete est valide
+ * et doit rendre 0 ligne. (Un identifiant fantaisiste comme « demo-invite »
+ * serait refuse par PostgreSQL : la colonne est de type uuid.)
+ */
+const UTILISATEUR_INEXISTANT = '00000000-0000-0000-0000-000000000000'
+
 export default async function Accueil() {
   const { depot } = await import('@/lib/data')
 
-  const [templates, projets, profilDemo] = await Promise.all([
+  const [templates, projets, profil] = await Promise.all([
     depot.listerTemplates(),
-    depot.listerProjets('demo-invite'),
-    depot.obtenirProfil('demo-invite'),
+    depot.listerProjets(UTILISATEUR_INEXISTANT),
+    depot.obtenirProfil(UTILISATEUR_INEXISTANT),
   ])
 
   return (
     <>
       <h1>Motiq — socle de l&apos;application</h1>
       <p className="sous-titre">
-        Phase 2 : les fondations. L&apos;application démarre en local, les 13 écrans validés sont
-        intégrés, et la couche de données répond — <strong>sans aucun identifiant</strong>.
+        Phase 2 : les fondations. L&apos;application démarre, les 13 écrans validés sont intégrés,
+        et la couche de données lit la <strong>vraie base Supabase</strong> (projet <code>motiq</code>,
+        Europe de l&apos;Ouest) — avec la sécurité RLS active sur les 8 tables.
       </p>
 
       <h2>La couche de données répond</h2>
@@ -50,11 +59,11 @@ export default async function Accueil() {
           </tr>
           <tr>
             <td>Projets de l&apos;utilisateur de test</td>
-            <td>{projets.length}</td>
+            <td>{projets.length} — lecture valide, aucune donnee inventee</td>
           </tr>
           <tr>
             <td>Profil de test</td>
-            <td>{profilDemo ? profilDemo.email : 'aucun (normal : base neuve)'}</td>
+            <td>{profil ? profil.email : 'aucun (normal : base neuve)'}</td>
           </tr>
         </tbody>
       </table>
