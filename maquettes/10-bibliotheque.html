@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motiq — Bibliothèque de projets</title>
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Motiq, maquette Phase 1 (LAB 04) — écran 10 : Bibliothèque de projets. Contenu de démonstration.">
+<!-- Maquette statique. Surface : Explorer (+ Agir au second plan).
+     Généré par le Central Orchestrator Agent — Phase 1 du cahier des charges Motiq.
+     Autonome : CSS et JS inlinés, aucune dépendance réseau. -->
+<style>
+/* ============================================================
+   MOTIQ — Design system « liquid glass » (Phase 1, maquettes)
+   Cible : mobile d'abord, puis tablette et ordinateur.
+   Inliné dans chaque écran pour que chaque maquette soit
+   ouvrable seule (navigateur, aperçu, envoi).
+   ============================================================ */
+
+:root {
+  /* Palette — choisie, pas par défaut : turquoise électrique + corail chaud.
+     Volontairement PAS d'indigo/violet (tell d'IA générique). */
+  --accent:        oklch(80% 0.15 178);   /* turquoise */
+  --accent-deep:   oklch(62% 0.13 182);
+  --warm:          oklch(72% 0.16 38);    /* corail */
+  --ok:            oklch(78% 0.14 150);
+  --warn:          oklch(82% 0.14 85);
+  --danger:        oklch(66% 0.19 22);
+
+  /* Surfaces */
+  --bg-0: oklch(17% 0.015 250);
+  --bg-1: oklch(21% 0.02 250);
+  --ink:    oklch(97% 0.005 250);
+  --ink-2:  oklch(82% 0.01 250);
+  --muted:  oklch(70% 0.012 250);
+  --line:   oklch(100% 0 0 / 0.14);
+  --line-soft: oklch(100% 0 0 / 0.08);
+
+  /* Verre : fond translucide + bord lumineux + relief interne + ombre.
+     Le flou seul ne suffit pas — c'est le relief qui fait la profondeur. */
+  --glass:        oklch(100% 0 0 / 0.06);
+  --glass-strong: oklch(100% 0 0 / 0.10);
+  --glass-hi:     oklch(100% 0 0 / 0.22);
+  --shadow-1: 0 2px 8px oklch(0% 0 0 / .30);
+  --shadow-2: 0 12px 32px oklch(0% 0 0 / .38);
+  --blur: 18px;
+
+  /* Formes et rythme */
+  --r-sm: 12px; --r-md: 18px; --r-lg: 26px; --r-pill: 999px;
+  --sp-1: 6px; --sp-2: 10px; --sp-3: 16px; --sp-4: 22px; --sp-5: 32px;
+  --tap: 44px;                 /* cible tactile minimale (exigence §9.3) */
+  --font: "Segoe UI Variable Display", "Segoe UI", -apple-system, "Helvetica Neue", sans-serif;
+  --spring: cubic-bezier(.22, 1.2, .36, 1);
+}
+
+/* Mode clair : mêmes surfaces, inversées, contrastes vérifiés */
+:root[data-theme="light"] {
+  --bg-0: oklch(93% 0.014 250);
+  --bg-1: oklch(97% 0.008 250);
+  --ink:   oklch(20% 0.02 250);
+  --ink-2: oklch(33% 0.018 250);
+  --muted: oklch(46% 0.015 250);
+  --line:  oklch(18% 0.02 250 / 0.20);
+  --line-soft: oklch(18% 0.02 250 / 0.11);
+  --glass:        oklch(100% 0 0 / 0.74);
+  --glass-strong: oklch(100% 0 0 / 0.88);
+  --glass-hi:     oklch(100% 0 0 / 0.96);
+  --shadow-1: 0 2px 6px oklch(32% 0.03 250 / .18);
+  --shadow-2: 0 14px 34px oklch(32% 0.03 250 / .22);
+}
+
+/* Mode clair : on calme le fond pour que le verre se detache (exigence §9.3) */
+:root[data-theme="light"] .bg::before { filter: saturate(.72) brightness(1.08); }
+:root[data-theme="light"] .blob { opacity: .30; }
+:root[data-theme="light"] .glass { border-color: oklch(18% 0.02 250 / 0.16); }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+  min-height: 100vh;
+}
+
+/* ---------- Fond : dégradés fluides + formes organiques ---------- */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.bg::before {
+  content: ""; position: absolute; inset: -20%;
+  background:
+    radial-gradient(48% 42% at 18% 12%, oklch(70% 0.16 178 / .38), transparent 62%),
+    radial-gradient(42% 40% at 88% 22%, oklch(72% 0.17 38 / .26), transparent 64%),
+    radial-gradient(60% 50% at 50% 108%, oklch(58% 0.14 285 / .24), transparent 66%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-0));
+}
+.blob { position: absolute; border-radius: 50%; filter: blur(58px); opacity: .5; }
+/* Les formes restent ENTIEREMENT dans le cadre : un blob qui depasse est
+   rogne par overflow:hidden, ce qui cree une arete droite visible.
+   garde-fou : on les garde a l'interieur et on adoucit le flou. */
+.blob.b1 { width: 38vw; height: 38vw; left: 3vw; top: 8vh;
+  background: radial-gradient(circle, oklch(78% 0.15 178 / .48), transparent 70%);
+  animation: drift1 26s var(--spring) infinite alternate; }
+.blob.b2 { width: 32vw; height: 32vw; right: 4vw; top: 48vh;
+  background: radial-gradient(circle, oklch(74% 0.17 38 / .36), transparent 70%);
+  animation: drift2 32s var(--spring) infinite alternate; }
+@keyframes drift1 { to { transform: translate3d(3vw, -4vh, 0) scale(1.06); } }
+@keyframes drift2 { to { transform: translate3d(-3vw, 4vh, 0) scale(1.05); } }
+
+/* ---------- Coquille d'application (mobile d'abord) ---------- */
+.stage { position: relative; z-index: 1; display: flex; justify-content: center; padding: var(--sp-3); }
+.app {
+  width: 100%; max-width: 430px; min-height: 92vh;
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  animation: rise .5s var(--spring) both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+/* Barre haute */
+.topbar { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; }
+.brand .mark {
+  width: 30px; height: 30px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--warm));
+  box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow-1);
+}
+.brand small { display: block; font-weight: 500; color: var(--muted); font-size: 11px; letter-spacing: .4px; }
+.spacer { flex: 1; }
+
+/* ---------- Le verre ---------- */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(var(--blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(150%);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow-2);
+  border-radius: var(--r-lg);
+}
+.card { padding: var(--sp-3); }
+.card.strong { background: var(--glass-strong); }
+.section-title { display: flex; align-items: baseline; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+.section-title h2 { font-size: 15px; margin: 0; letter-spacing: .2px; }
+.section-title span { color: var(--muted); font-size: 12px; }
+
+/* ---------- Typographie ---------- */
+h1 { font-size: 30px; line-height: 1.1; margin: 0 0 var(--sp-2); letter-spacing: -.6px; }
+h2 { font-size: 17px; margin: 0 0 var(--sp-2); }
+h3 { font-size: 14px; margin: 0 0 var(--sp-1); color: var(--ink-2); }
+p  { margin: 0 0 var(--sp-2); color: var(--ink-2); line-height: 1.5; font-size: 14px; }
+.lead { font-size: 15px; color: var(--ink-2); }
+.tiny { font-size: 12px; color: var(--muted); }
+.mono { font-variant-numeric: tabular-nums; }
+.grad-text { background: linear-gradient(100deg, var(--accent), var(--warm)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* ---------- Boutons (cible ≥ 44 px, ressort au toucher) ---------- */
+.btn {
+  min-height: var(--tap); padding: 0 var(--sp-4);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: var(--r-pill); border: 1px solid var(--line);
+  background: var(--glass-strong); color: var(--ink);
+  font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--glass-hi), var(--shadow-1);
+  transition: transform .18s var(--spring), background .2s ease, box-shadow .2s ease;
+  backdrop-filter: blur(10px);
+}
+.btn:hover { background: var(--glass-hi); }
+.btn:active { transform: scale(.96); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: oklch(18% 0.02 190); border-color: transparent;
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .45), 0 10px 26px oklch(70% 0.15 178 / .32);
+}
+.btn.warm { background: linear-gradient(135deg, var(--warm), oklch(64% 0.16 25)); color: oklch(20% 0.03 40); border-color: transparent; }
+.btn.wide { width: 100%; }
+.btn.ghost { background: transparent; box-shadow: none; }
+.btn.sm { min-height: var(--tap); padding: 0 var(--sp-3); font-size: 13px; }
+.row { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+.row.tight { gap: var(--sp-1); }
+
+/* ---------- Chips, badges, pastilles ---------- */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: var(--r-pill);
+  border: 1px solid var(--line); background: var(--glass); font-size: 12.5px; color: var(--ink-2); min-height: var(--tap); cursor: pointer; }
+.chip[aria-pressed="true"], .chip.on { border-color: color-mix(in oklab, var(--accent) 60%, transparent);
+  background: color-mix(in oklab, var(--accent) 22%, transparent); color: var(--ink); font-weight: 600; }
+.badge { font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
+  padding: 4px 9px; border-radius: var(--r-pill); border: 1px solid var(--line); color: var(--muted); }
+.badge.ok { color: var(--ok); border-color: color-mix(in oklab, var(--ok) 45%, transparent); }
+.badge.warn { color: var(--warn); border-color: color-mix(in oklab, var(--warn) 45%, transparent); }
+.badge.acc { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.acc { background: var(--accent); }
+
+/* ---------- Formulaires ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--sp-3); }
+.field label { font-size: 12.5px; color: var(--muted); }
+.input {
+  min-height: var(--tap); padding: 0 var(--sp-3); border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--glass); color: var(--ink);
+  font: inherit; font-size: 14px; width: 100%;
+}
+.input::placeholder { color: var(--muted); }
+.input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.hint { font-size: 11.5px; color: var(--muted); }
+
+/* ---------- Listes et lignes ---------- */
+.list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.item { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--glass);
+  min-height: 62px; transition: transform .16s var(--spring), background .2s ease; }
+.item:hover { background: var(--glass-strong); transform: translateY(-1px); }
+.item .nm { font-weight: 600; font-size: 14px; }
+.thumb { width: 44px; height: 44px; border-radius: 12px; flex: 0 0 auto;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 45%, transparent), color-mix(in oklab, var(--warm) 40%, transparent));
+  border: 1px solid var(--line); box-shadow: inset 0 1px 0 var(--glass-hi); }
+.thumb.v { aspect-ratio: 9/16; height: 62px; width: auto; }
+
+/* ---------- Navigation basse ---------- */
+.tabbar { margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  padding: 6px; border-radius: var(--r-lg); }
+.tabbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 52px; border-radius: var(--r-md); text-decoration: none; color: var(--muted); font-size: 11px; }
+.tabbar a[aria-current="page"] { color: var(--ink); background: var(--glass-strong);
+  box-shadow: inset 0 1px 0 var(--glass-hi); font-weight: 600; }
+.tabbar .ic { width: 20px; height: 20px; border-radius: 6px; border: 1px solid currentColor; opacity: .8; }
+.logo-word { font-weight: 800; letter-spacing: -.4px; }
+
+/* Les cartes cliquables sont des liens : on neutralise le style de lien par
+   defaut (bleu souligne) qui rendait les titres de vignettes illisibles. */
+a.item, a.tile, a.btn { color: inherit; text-decoration: none; }
+a.tile .cap, a.tile .sub { color: inherit; }
+a.tile .sub { color: var(--muted); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-sm); }
+
+/* ---------- Barre de progression / quota ---------- */
+.meter { height: 8px; border-radius: 99px; background: var(--glass-strong); overflow: hidden; border: 1px solid var(--line-soft); }
+.meter > i { display: block; height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--warm)); transition: width .6s var(--spring); }
+
+/* ---------- Grille galerie / bibliothèque ---------- */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); }
+.tile { position: relative; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line);
+  aspect-ratio: 9/16; background: linear-gradient(160deg, var(--glass-strong), transparent);
+  display: flex; flex-direction: column; justify-content: flex-end; padding: var(--sp-2); cursor: pointer; }
+.tile .cap { font-size: 12px; font-weight: 600; }
+.tile .sub { font-size: 10.5px; color: var(--muted); }
+.tile[aria-pressed="true"] { border-color: color-mix(in oklab, var(--accent) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 50%, transparent), var(--shadow-2); }
+
+/* ---------- Éditeur : canvas + inspecteur ---------- */
+.split { display: grid; grid-template-columns: 1fr; gap: var(--sp-2); }
+.canvas9x16 { position: relative; aspect-ratio: 9/16; border-radius: var(--r-md); overflow: hidden;
+  border: 1px solid var(--line); background: linear-gradient(200deg, oklch(28% 0.05 195), oklch(18% 0.03 265));
+  display: grid; place-items: center; text-align: center; padding: var(--sp-3); }
+.canvas9x16 .cap9 { font-size: 19px; font-weight: 700; letter-spacing: -.3px; }
+.deco { position: absolute; inset: auto -10% -14% -10%; height: 46%;
+  background: radial-gradient(closest-side, oklch(74% 0.16 38 / .5), transparent); filter: blur(22px); }
+.timeline { display: flex; gap: 4px; margin-top: var(--sp-2); }
+.tl-scene { flex: 1; height: var(--tap); border-radius: 8px; border: 1px solid var(--line);
+  background: var(--glass); display: grid; place-items: center; font-size: 10.5px; color: var(--muted); }
+.tl-scene[aria-current="true"] { border-color: var(--accent); color: var(--ink); background: color-mix(in oklab, var(--accent) 20%, transparent); }
+
+/* ---------- Écran de génération : l'animation EST le contenu ---------- */
+.gen-wrap { display: grid; place-items: center; gap: var(--sp-4); padding: var(--sp-4) 0; text-align: center; }
+.orb { position: relative; width: 168px; height: 168px; border-radius: 50%; display: grid; place-items: center; }
+.orb::before, .orb::after { content: ""; position: absolute; inset: 0; border-radius: 50%; }
+.orb::before { background: conic-gradient(from 0deg, transparent 0 40%, color-mix(in oklab, var(--accent) 85%, transparent) 70%, transparent 100%);
+  animation: spin 3.1s linear infinite; }
+.orb::after { inset: 12px; background: radial-gradient(circle at 34% 30%, var(--glass-hi), transparent 60%), var(--glass-strong);
+  backdrop-filter: blur(14px); border: 1px solid var(--line); }
+.orb b { position: relative; z-index: 2; font-size: 26px; font-variant-numeric: tabular-nums; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.steps { display: flex; flex-direction: column; gap: var(--sp-1); text-align: left; width: 100%; }
+.step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); padding: 7px 0; }
+.step .tick { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-size: 11px; }
+.step.done { color: var(--ink-2); } .step.done .tick { border-color: var(--ok); color: var(--ok); }
+.step.now { color: var(--ink); font-weight: 600; } .step.now .tick { border-color: var(--accent); }
+.bars { display: flex; gap: 3px; align-items: flex-end; height: 34px; }
+.bars i { width: 4px; border-radius: 3px; background: linear-gradient(180deg, var(--accent), transparent); animation: eq 1.05s ease-in-out infinite; }
+.bars i:nth-child(2n) { animation-delay: .14s } .bars i:nth-child(3n) { animation-delay: .28s }
+@keyframes eq { 0%,100% { height: 8px } 50% { height: 30px } }
+
+/* ---------- Cartes de prix (surface Compare : structure alignée) ---------- */
+.plans { display: grid; gap: var(--sp-2); }
+.plan { padding: var(--sp-3); border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--glass); }
+.plan.hi { border-color: color-mix(in oklab, var(--accent) 55%, transparent); background: var(--glass-strong);
+  box-shadow: 0 14px 38px color-mix(in oklab, var(--accent) 18%, transparent); }
+.plan .price { font-size: 26px; font-weight: 800; letter-spacing: -.8px; }
+.plan ul { list-style: none; padding: 0; margin: var(--sp-2) 0 0; display: grid; gap: 7px; }
+.plan li { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: baseline; }
+.plan li::before { content: "●"; color: var(--accent); font-size: 8px; }
+.plan li.off { color: var(--muted); } .plan li.off::before { color: var(--muted); }
+.plan-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+
+/* ---------- Aperçu / maquette d'explication (hors produit) ---------- */
+.note { border-left: 2px solid var(--accent); padding-left: var(--sp-3); color: var(--muted); font-size: 12.5px; }
+.placeholder { opacity: .55; font-style: italic; }
+
+/* ---------- Adaptations tablette et ordinateur (§9.3) ---------- */
+@media (min-width: 760px) {
+  .stage { padding: var(--sp-5) var(--sp-4); align-items: flex-start; }
+  .app { max-width: 900px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+  /* Sur grand ecran, une vignette 9:16 pleine largeur devient enorme et vide :
+     on la borne en hauteur pour que le titre reste dans le cadre. */
+  .tile { aspect-ratio: 3 / 4; max-height: 330px; }
+  .split { grid-template-columns: 1.1fr .9fr; align-items: start; }
+  h1 { font-size: 38px; }
+  .plans { grid-template-columns: repeat(3, 1fr); }
+  .tabbar { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 560px; margin-left: auto; margin-right: auto; }
+}
+@media (min-width: 1200px) { .app { max-width: 1080px; } .grid { grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); } }
+
+/* ---------- Accessibilité : contraste sur verre ---------- */
+@media (prefers-contrast: more) {
+  .glass, .item, .plan { background: var(--bg-1); backdrop-filter: none; border-color: var(--ink-2); }
+}
+
+/* ---------- Respect de « réduire les animations » (§9.2, obligatoire) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .blob { opacity: .35; }
+  .app { animation: none; }
+}
+
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span></div>
+<div class="stage">
+  <main class="app">
+<header class="topbar">
+  <div class="brand"><span class="mark"></span><span class="logo-word">Mes projets</span></div>
+  <span class="spacer"></span><button class="btn sm ghost" id="theme">Clair</button>
+</header>
+
+<input class="input" placeholder="Rechercher un projet…" aria-label="Rechercher un projet">
+<div class="row" data-group style="flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px">
+  <button class="chip" aria-pressed="true">Tous</button>
+  <button class="chip" aria-pressed="false">Terminés</button>
+  <button class="chip" aria-pressed="false">En cours</button>
+  <button class="chip" aria-pressed="false">Brouillons</button>
+  <button class="chip" aria-pressed="false">Échecs</button>
+</div>
+
+<div class="grid">
+  <a class="tile" href="09-export-partage.html"><span class="badge ok" style="position:absolute;top:8px;left:8px">Terminé</span>
+    <span class="cap">3 astuces pour gagner du temps</span><span class="sub">28 s · il y a 2 h</span></a>
+  <a class="tile" href="07-generation.html"><span class="badge warn" style="position:absolute;top:8px;left:8px">En cours</span>
+    <span class="cap">Lancement produit — teaser</span><span class="sub">scène 3/6</span></a>
+  <a class="tile" href="05-script-scenes.html"><span class="badge" style="position:absolute;top:8px;left:8px">Brouillon</span>
+    <span class="cap">Note vocale — idée de lundi</span><span class="sub">4 scènes</span></a>
+  <a class="tile" href="08-editeur-apercu.html"><span class="badge ok" style="position:absolute;top:8px;left:8px">Terminé</span>
+    <span class="cap">Recette express — 60 s</span><span class="sub">1:00 · hier</span></a>
+  <a class="tile" href="07-generation.html"><span class="badge warn" style="position:absolute;top:8px;left:8px">Échec</span>
+    <span class="cap">Promo de printemps</span><span class="sub">rendu à relancer</span></a>
+  <div class="tile glass" style="justify-content:center;align-items:center;cursor:default">
+    <a class="btn sm" href="04-creation-entree.html">+ Nouvelle vidéo</a>
+  </div>
+</div>
+
+<div class="glass card" style="margin-top:var(--sp-2)">
+  <h3>Projet sélectionné</h3>
+  <div class="row tight">
+    <button class="btn sm">Ouvrir</button>
+    <button class="btn sm">Dupliquer</button>
+    <button class="btn sm">Renommer</button>
+    <button class="btn sm" style="color:var(--danger);border-color:color-mix(in oklab, var(--danger) 45%, transparent)">Supprimer</button>
+  </div>
+  <p class="hint" style="margin-top:var(--sp-2)">La suppression demande une confirmation et efface aussi les médias associés.</p>
+</div>
+<p class="note">Un rendu en échec propose une reprise sans recompter le quota (§13).</p>
+      <nav class="tabbar glass" aria-label="Navigation principale">
+        <a href="03-accueil-connecte.html"><span class="ic"></span>Accueil</a>
+        <a href="04-creation-entree.html"><span class="ic"></span>Créer</a>
+        <a href="10-bibliotheque.html" aria-current="page"><span class="ic"></span>Projets</a>
+        <a href="13-parametres-compte.html"><span class="ic"></span>Compte</a>
+      </nav>
+  </main>
+</div>
+<script>
+/* MOTIQ — comportements partagés des maquettes (Phase 1)
+   Volontairement minimal : thème, groupes de choix, animation de génération.
+   Tout est inerte si `prefers-reduced-motion` est actif (voir le CSS). */
+
+(function () {
+  var root = document.documentElement;
+  var KEY = 'motiq-theme';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --- Thème : sombre par défaut, choix mémorisé (§9.1) --- */
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  root.setAttribute('data-theme', saved || 'dark');
+
+  function mountThemeButton() {
+    var b = document.getElementById('theme');
+    if (!b) return;
+    var sync = function () {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      b.textContent = dark ? 'Clair' : 'Sombre';
+      b.setAttribute('aria-label', dark ? 'Passer en mode clair' : 'Passer en mode sombre');
+    };
+    b.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+      sync();
+    });
+    sync();
+  }
+
+  /* --- Groupes de choix exclusifs (chips de filtre, galerie de templates) --- */
+  function mountGroups() {
+    document.querySelectorAll('[data-group]').forEach(function (g) {
+      var single = g.getAttribute('data-group') !== 'multi';
+      g.addEventListener('click', function (ev) {
+        var el = ev.target.closest('[aria-pressed]');
+        if (!el || !g.contains(el)) return;
+        if (single) {
+          g.querySelectorAll('[aria-pressed="true"]').forEach(function (o) {
+            if (o !== el) o.setAttribute('aria-pressed', 'false');
+          });
+          el.setAttribute('aria-pressed', 'true');
+        } else {
+          el.setAttribute('aria-pressed', el.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        }
+      });
+    });
+  }
+
+  /* --- Écran de génération : progression animée, pas une barre basique (§9.2) --- */
+  function mountGeneration() {
+    var wrap = document.querySelector('[data-gen]');
+    if (!wrap) return;
+    var pctEl = wrap.querySelector('[data-pct]');
+    var steps = wrap.querySelectorAll('.step');
+    var total = 9000, t0 = performance.now(), target = 100;
+
+    if (reduce) { /* animation désactivée : on montre l'état final */
+      if (pctEl) pctEl.textContent = target + '\u00A0%';
+      steps.forEach(function (s) { s.classList.remove('now'); s.classList.add('done'); });
+      return;
+    }
+
+    function frame(now) {
+      var p = Math.min(1, (now - t0) / total);
+      var eased = 1 - Math.pow(1 - p, 2.2);
+      if (pctEl) pctEl.textContent = Math.round(eased * target) + '\u00A0%';
+      steps.forEach(function (s, i) {
+        var at = (i + 1) / (steps.length + 0.6);
+        s.classList.toggle('done', eased >= at);
+        s.classList.toggle('now', eased < at && eased >= (i) / (steps.length + 0.6));
+      });
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    mountThemeButton(); mountGroups(); mountGeneration();
+  });
+})();
+
+</script>
+</body>
+</html>
