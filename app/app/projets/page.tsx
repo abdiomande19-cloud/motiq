@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { creerClientServeur } from '@/lib/supabase/server'
 import { obtenirDepotPourJeton } from '@/lib/data'
@@ -106,7 +107,9 @@ export default async function PageProjets() {
         <div className="cartes">
           {projets.map((projet) => (
             <div key={projet.id} className="carte carte-projet">
-              <span className="carte-titre">{projet.titre}</span>
+              <Link href={`/projets/${projet.id}`} className="carte-titre">
+                {projet.titre}
+              </Link>
               <div className="carte-detail">
                 {LIBELLE_STATUT[projet.statut] ?? projet.statut} · entrée {projet.entreeSource}
               </div>

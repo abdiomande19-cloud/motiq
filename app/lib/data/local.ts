@@ -278,6 +278,16 @@ export class DepotLocal implements DepotMotiq {
     return appartient ? rendu : null
   }
 
+  async listerRendus(userId: string, projetId: string): Promise<Rendu[]> {
+    const base = await lire()
+    // On ne rend rien si le projet n'appartient pas a cet utilisateur.
+    const appartient = base.projets.some((p) => p.id === projetId && p.userId === userId)
+    if (!appartient) return []
+    return base.rendus
+      .filter((r) => r.projetId === projetId)
+      .sort((a, b) => b.creeLe.localeCompare(a.creeLe))
+  }
+
   async majProgressionRendu(
     renduId: string,
     progression: number,

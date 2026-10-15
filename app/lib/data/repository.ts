@@ -79,6 +79,8 @@ export interface DepotMotiq {
   // --- Rendus ----------------------------------------------------------
   creerRendu(nouveau: NouveauRendu): Promise<Rendu>
   obtenirRendu(userId: string, renduId: string): Promise<Rendu | null>
+  /** Tous les rendus d'un projet, du plus recent au plus ancien. */
+  listerRendus(userId: string, projetId: string): Promise<Rendu[]>
   majProgressionRendu(renduId: string, progression: number, statut: Rendu['statut']): Promise<Rendu>
 
   // --- Kit de marque ---------------------------------------------------

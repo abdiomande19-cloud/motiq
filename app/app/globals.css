@@ -375,3 +375,94 @@ code {
   font-size: 0.86rem;
   color: var(--texte-faible);
 }
+
+/* ---------------------------------------------- editeur de scenes */
+
+.fil {
+  color: var(--texte-faible);
+  font-size: 0.9rem;
+  margin: 0 0 6px;
+}
+
+.compteur {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  border-left: 3px solid var(--bord);
+  background: var(--fond);
+}
+
+.compteur-ok {
+  border-left-color: var(--accent);
+  color: #c8fff8;
+}
+
+.compteur-ko {
+  border-left-color: var(--accent-2);
+  color: #ffd7cc;
+}
+
+.scenes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.scene {
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scene-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.scene-numero {
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 0.92rem;
+}
+
+.scene-outils {
+  display: flex;
+  gap: 6px;
+}
+
+.scene-duree {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.scene-duree input {
+  width: 90px !important;
+}
+
+/* ---------------------------------------------- choix du template */
+
+.carte-choix {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.carte-choix.choisi {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.carte-choix.choisi .carte-titre {
+  color: var(--accent);
+}

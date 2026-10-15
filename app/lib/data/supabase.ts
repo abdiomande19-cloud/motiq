@@ -439,6 +439,22 @@ export class DepotSupabase implements DepotMotiq {
     return data ? versRendu(data as unknown as LigneRendu) : null
   }
 
+  async listerRendus(userId: string, projetId: string): Promise<Rendu[]> {
+    // Le filtre sur user_id n'est pas une precaution de style : c'est ce qui
+    // empeche de lire les rendus d'un projet qui n'est pas le sien. RLS le
+    // refuserait de toute facon, mais autant ne pas le demander.
+    const projet = await this.obtenirProjet(userId, projetId)
+    if (!projet) return []
+
+    const { data, error } = await this.client
+      .from('render_jobs')
+      .select('*')
+      .eq('projet_id', projetId)
+      .order('cree_le', { ascending: false })
+    verifier(error, 'liste des rendus')
+    return (data as LigneRendu[]).map(versRendu)
+  }
+
   async majProgressionRendu(
     renduId: string,
     progression: number,

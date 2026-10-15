@@ -34,28 +34,29 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
   },
   {
     num: 4,
-    titre: 'Écrans reliés et PWA',
-    etat: 'en_cours',
+    titre: 'Parcours projet',
+    etat: 'fait',
     detail:
-      'Bibliothèque de projets reliée à la base : créer, lister, dupliquer, supprimer. Reste : les écrans du cahier des charges (création guidée, script par scènes, choix du template, éditeur) et l\'installation PWA.',
+      'Bibliothèque de projets (créer, ouvrir, dupliquer, supprimer) et fiche projet complète : script découpé en scènes avec durées, choix parmi les 8 templates, demande de rendu. Les règles métier (durée de 15 à 60 s, au moins une scène, template existant) sont appliquées PAR LA BASE, pas seulement par l\u2019écran — vérifié en écrivant directement par l\u2019API, hors interface.',
   },
   {
     num: 5,
+    titre: 'Finition et installation',
+    etat: 'en_cours',
+    detail:
+      'Reste : application installable (PWA), reprise visuelle des écrans validés de la phase 1 (accueil visiteur, création guidée, aperçu, export, kit de marque, abonnement, réglages) et essai du parcours complet.',
+  },
+  {
+    num: 6,
     titre: 'Moteur motion design',
     etat: 'bloque',
     detail: 'Attend : clé Anthropic (script et scènes), service de transcription, worker de rendu Remotion.',
   },
   {
-    num: 6,
+    num: 7,
     titre: 'Abonnements',
     etat: 'bloque',
     detail: 'Attend : clés Stripe (secrète, publique, webhook) et identification des prix Pro et Business.',
-  },
-  {
-    num: 7,
-    titre: 'Finition et soumission',
-    etat: 'bloque',
-    detail: 'Après les phases précédentes. Test du parcours complet sur mobile et ordinateur.',
   },
 ]
 
