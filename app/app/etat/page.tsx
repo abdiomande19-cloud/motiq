@@ -21,30 +21,38 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
   {
     num: 2,
     titre: 'Fondations back-end',
-    etat: 'en_cours',
+    etat: 'fait',
     detail:
-      'Socle applicatif livré (démarre en local, écrans intégrés, couche de données branchée). Reste : Supabase — comptes, tables, RLS, stockage.',
+      'Supabase relié (projet motiq, Europe de l\'Ouest) : 8 tables, RLS active sur les 8 avec 18 politiques, bucket de stockage privé, 5 déclencheurs. Dépôt Supabase implémenté : les 24 méthodes du contrat. Vérifié : avec la clé publique, 0 ligne visible et écriture refusée.',
   },
   {
     num: 3,
-    titre: 'Front-end PWA',
-    etat: 'en_cours',
-    detail: 'Coquille de navigation et galerie en place. Reste : PWA installable, écrans reliés aux données.',
+    titre: 'Comptes et session',
+    etat: 'fait',
+    detail:
+      'Inscription, connexion, déconnexion. Session par cookies httpOnly, rafraîchie à chaque requête. Routes privées protégées et redirection avec mémorisation de la page visée. Profil créé automatiquement à l\'inscription. Vérifié : entre deux comptes réels, aucun ne voit ni ne modifie les données de l\'autre (403 sur l\'usurpation).',
   },
   {
     num: 4,
+    titre: 'Écrans reliés et PWA',
+    etat: 'en_cours',
+    detail:
+      'Bibliothèque de projets reliée à la base : créer, lister, dupliquer, supprimer. Reste : les écrans du cahier des charges (création guidée, script par scènes, choix du template, éditeur) et l\'installation PWA.',
+  },
+  {
+    num: 5,
     titre: 'Moteur motion design',
     etat: 'bloque',
     detail: 'Attend : clé Anthropic (script et scènes), service de transcription, worker de rendu Remotion.',
   },
   {
-    num: 5,
+    num: 6,
     titre: 'Abonnements',
     etat: 'bloque',
     detail: 'Attend : clés Stripe (secrète, publique, webhook) et identification des prix Pro et Business.',
   },
   {
-    num: 6,
+    num: 7,
     titre: 'Finition et soumission',
     etat: 'bloque',
     detail: 'Après les phases précédentes. Test du parcours complet sur mobile et ordinateur.',

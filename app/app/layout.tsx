@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 
 import './globals.css'
+import LienCompte from './lien-compte'
 
 export const metadata: Metadata = {
   title: 'Motiq — création de vidéos motion design',
   description:
-    'Motiq transforme une idée, des images ou une note vocale en vidéo motion design prête à publier. LAB 04 — Phase 2 (socle).',
+    'Motiq transforme une idée, des images ou une note vocale en vidéo motion design prête à publier. LAB 04 — Phase 3 : comptes et sécurité.',
   applicationName: 'Motiq',
   manifest: '/manifest.webmanifest',
 }
@@ -29,11 +30,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav className="bandeau-liens">
             <Link href="/ecrans">Les 13 écrans</Link>
             <Link href="/etat">État du socle</Link>
+            <LienCompte />
           </nav>
         </header>
         <main className="contenu">{children}</main>
         <footer className="pied">
-          Motiq — LAB 04 HACKTUALIZ | ACADEMY-CÔTE D&apos;IVOIRE · Phase 2, socle en construction
+          Motiq — LAB 04 HACKTUALIZ | ACADEMY-CÔTE D&apos;IVOIRE · Phase 3 : comptes, session et
+          sécurité des données
         </footer>
       </body>
     </html>

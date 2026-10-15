@@ -51,6 +51,32 @@ export function obtenirDepot(): DepotMotiq {
   return instance
 }
 
+/**
+ * Depot qui parle a la base SOUS L'IDENTITE de l'utilisateur connecte.
+ *
+ * C'est LE mode a utiliser des qu'il y a une session : on passe la cle PUBLIQUE
+ * (sans danger, destinee au navigateur) et le jeton de l'utilisateur. Les
+ * requetes arrivent donc dans PostgreSQL avec le role « authenticated » et
+ * l'identifiant de l'utilisateur — et c'est RLS qui filtre. Le code applicatif
+ * ne peut pas « oublier » de filtrer : la base refuse d'elle-meme.
+ *
+ * A l'inverse, `obtenirDepot()` sans jeton sert la cle secrete : c'est le mode
+ * serveur/administration, a reserver aux traitements de fond.
+ */
+export function obtenirDepotPourJeton(jeton: string): DepotMotiq {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const publique = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+
+  if (!url || !publique) {
+    throw new Error(
+      'Motiq : configuration Supabase absente. Impossible de lire la base sous ' +
+        "l'identite de l'utilisateur.",
+    )
+  }
+
+  return new DepotSupabase(url, publique, jeton)
+}
+
 /** Depot pret a l'emploi : `import { depot } from '@/lib/data'`. */
 export const depot: DepotMotiq = obtenirDepot()
 
