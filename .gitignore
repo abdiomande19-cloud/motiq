@@ -30,3 +30,7 @@ desktop.ini
 
 # Sauvegardes locales (créées par le garde-fou avant modification)
 *.bak.*
+
+# artefacts de livraison (ne pas versionner)
+*.bundle
+*.zip
