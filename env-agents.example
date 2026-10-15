@@ -1,0 +1,36 @@
+# =============================================================================
+# MOTIQ — variables d'environnement pour les AGENTS HERMES
+# -----------------------------------------------------------------------------
+# À QUOI ÇA SERT : à donner aux agents (moi, l'Application Builder) les moyens
+# d'agir par ligne de commande — créer le dépôt, pousser un commit, lier le
+# projet Supabase, déployer en aperçu.
+#
+# OÙ LE COLLER : dans le fichier .env du profil de l'agent concerné, PAS ici.
+#   Profil Application Builder :
+#     C:\Users\Diomande\AppData\Local\hermes\profiles\application-builder-agent\.env
+#   Profil Orchestrateur (moi) :
+#     C:\Users\Diomande\AppData\Local\hermes\profiles\central-orchestrator-agent\.env
+#
+# Ajoutez les lignes à la FIN du fichier existant, sans toucher aux autres.
+# Un agent ne doit JAMAIS voir la valeur : il vérifie seulement sa présence.
+#
+# PORTÉE (décision B4 : on ne donne pas de jeton à pleins pouvoirs)
+#   GITHUB_TOKEN          -> jeton fin, UN SEUL dépôt, Contents R/W, 90 jours
+#   SUPABASE_ACCESS_TOKEN -> jeton personnel d'administration : à révoquer après usage
+#   VERCEL_TOKEN          -> jeton de compte : restreindre au projet, révoquer après usage
+#   ANTHROPIC_API_KEY     -> clé dédiée au projet, avec un plafond de dépense si possible
+# =============================================================================
+
+# --- GitHub (débloque la Phase 2 : dépôt, commits, PR) ---
+GITHUB_TOKEN=
+
+# --- Supabase (débloque : lier le projet, migrations, règles RLS) ---
+SUPABASE_ACCESS_TOKEN=
+
+# --- Vercel (débloque : déploiement d'aperçu) ---
+VERCEL_TOKEN=
+
+# --- IA (débloque : génération du script en scènes côté serveur) ---
+# ANTHROPIC_API_KEY=
+
+# --- Rappel : jamais de jeton de production à pleins pouvoirs ici ---

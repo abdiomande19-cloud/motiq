@@ -1,0 +1,32 @@
+# Dépendances
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets — LE POINT CRITIQUE (§12 : aucune clé exposée)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Sorties de build
+dist/
+build/
+.next/
+out/
+
+# Médias rendus et journaux
+*.mp4
+*.webm
+logs/
+*.log
+
+# Système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Sauvegardes locales (créées par le garde-fou avant modification)
+*.bak.*
