@@ -7,10 +7,10 @@ echo    MOTIQ  -  ajout du jeton GitHub
 echo ================================================================
 echo.
 echo   Ce que ce script va vous demander :
-echo     1. le jeton GitHub   -> la saisie est MASQUEE (rien ne s'affiche)
-echo     2. le depot          -> forme  votre-compte/motiq
-echo     3. votre nom         -> pour les commits
-echo     4. votre e-mail      -> pour les commits
+echo     1. le jeton GitHub ... saisie MASQUEE (rien ne s'affiche)
+echo     2. le depot .......... forme  votre-compte/motiq
+echo     3. votre nom ......... pour signer les commits
+echo     4. votre e-mail ...... pour signer les commits
 echo.
 echo   Rien ne part dans une conversation. Le jeton est ecrit
 echo   directement dans le fichier .env du profil de l'agent.
