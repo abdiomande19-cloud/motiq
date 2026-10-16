@@ -1,15 +1,23 @@
 import type { Metadata } from 'next'
+import { depot } from '@/lib/data'
 
 /**
  * Page d'état du socle : ce qui est fait, ce qui reste, ce qui bloque.
  *
  * Elle est écrite à la main parce qu'elle raconte un état VERIFIÉ, pas une
  * mesure automatique. Chaque phase renvoie au chapitre 14 du cahier des charges.
+ * Le premier tableau, lui, est lu en direct dans la base : impossible de le
+ * falsifier sans changer les données.
  */
 
 export const metadata: Metadata = {
   title: 'Motiq — état du socle',
 }
+
+export const dynamic = 'force-dynamic'
+
+/** Identifiant bien formé mais inexistant : la lecture doit rendre 0 ligne. */
+const UTILISATEUR_INEXISTANT = '00000000-0000-0000-0000-000000000000'
 
 const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'; detail: string }[] = [
   {
@@ -67,7 +75,14 @@ const LIBELLE: Record<'fait' | 'en_cours' | 'bloque', string> = {
   bloque: '⛔ bloqué',
 }
 
-export default function PageEtat() {
+export default async function PageEtat() {
+  // Lu en direct dans la base : ce tableau ne peut pas être falsifié à la main.
+  const [templates, projets, profil] = await Promise.all([
+    depot.listerTemplates(),
+    depot.listerProjets(UTILISATEUR_INEXISTANT),
+    depot.obtenirProfil(UTILISATEUR_INEXISTANT),
+  ])
+
   return (
     <>
       <h1>État du socle</h1>
@@ -76,6 +91,39 @@ export default function PageEtat() {
         marquée « fait » que si ses critères d&apos;acceptation ont été vérifiés par une exécution.
       </p>
 
+      <h2>La couche de données répond</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Élément</th>
+            <th>Valeur lue en direct dans la base</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Implémentation active</td>
+            <td>
+              <code>{depot.nom}</code>
+            </td>
+          </tr>
+          <tr>
+            <td>Templates disponibles</td>
+            <td>
+              <strong>{templates.length}</strong> — minimum exigé par le cahier des charges : 8
+            </td>
+          </tr>
+          <tr>
+            <td>Projets de l&apos;utilisateur de test</td>
+            <td>{projets.length} — l&apos;utilisateur inexistant ne voit rien, c&apos;est voulu</td>
+          </tr>
+          <tr>
+            <td>Profil de test</td>
+            <td>{profil ? profil.email : 'aucun (normal : pas de session)'}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Les phases</h2>
       <table>
         <thead>
           <tr>

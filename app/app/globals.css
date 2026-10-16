@@ -651,3 +651,156 @@ h3 {
 .vignette form {
   margin: 0;
 }
+
+/* ---------------------------------------------- accueil visiteur */
+
+.hero {
+  padding: 26px 0 6px;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5.5vw, 3.1rem);
+  line-height: 1.08;
+  margin: 12px 0;
+  letter-spacing: -0.02em;
+}
+
+.degrade {
+  background: linear-gradient(95deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead {
+  color: var(--texte-faible);
+  font-size: 1.08rem;
+  max-width: 62ch;
+  margin: 0 0 6px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 20px 0 10px;
+}
+
+.badge,
+.badge-acc {
+  display: inline-block;
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--bord);
+  color: var(--texte-faible);
+  white-space: nowrap;
+}
+
+.badge-acc {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06201d;
+  font-weight: 600;
+}
+
+.etapes-accueil {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin: 26px 0;
+}
+
+.section-titre {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 32px 0 4px;
+}
+
+.section-titre h2 {
+  margin: 0;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 16px 0 8px;
+}
+
+.plan {
+  background: var(--fond-2);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-hi {
+  border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+  box-shadow: 0 14px 38px color-mix(in oklab, var(--accent) 16%, transparent);
+}
+
+.plan-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.plan-entete h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.plan-prix {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.plan-liste {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.plan-liste li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 0.93rem;
+}
+
+.plan-liste li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.plan-exclu {
+  color: var(--texte-faible);
+  text-decoration: line-through;
+}
+
+.plan-exclu::before {
+  content: '×' !important;
+  color: var(--texte-faible) !important;
+}
+
+/* Un lien d'action pleine largeur dans une carte. */
+.large {
+  width: 100%;
+  text-align: center;
+  align-self: stretch;
+}
