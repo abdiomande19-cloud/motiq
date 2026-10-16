@@ -466,3 +466,10 @@ code {
 .carte-choix.choisi .carte-titre {
   color: var(--accent);
 }
+
+/* ---------------------------------------------- bandeau : lien de compte */
+
+.lien-compte {
+  display: inline-block;
+  min-width: 90px;
+}

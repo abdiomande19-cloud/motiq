@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import './globals.css'
 import LienCompte from './lien-compte'
+import Installation from './installation'
 
 export const metadata: Metadata = {
   title: 'Motiq — création de vidéos motion design',
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav className="bandeau-liens">
             <Link href="/ecrans">Les 13 écrans</Link>
             <Link href="/etat">État du socle</Link>
+            <Installation />
             <LienCompte />
           </nav>
         </header>

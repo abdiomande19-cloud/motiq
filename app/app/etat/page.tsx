@@ -41,16 +41,17 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
   },
   {
     num: 5,
-    titre: 'Finition et installation',
-    etat: 'en_cours',
+    titre: 'Application installable (PWA)',
+    etat: 'fait',
     detail:
-      'Reste : application installable (PWA), reprise visuelle des écrans validés de la phase 1 (accueil visiteur, création guidée, aperçu, export, kit de marque, abonnement, réglages) et essai du parcours complet.',
+      'Manifeste complet, icônes 192 et 512 px (dont une version maskable pour Android), service worker et bouton « Installer l\u2019application ». Le service worker ne met JAMAIS en cache les pages privées (/projets, /connexion) : après une déconnexion, l\u2019utilisateur suivant ne peut pas voir la page de quelqu\u2019un d\u2019autre. Vérifié en mode production : Chrome a émis l\u2019invitation d\u2019installation.',
   },
   {
     num: 6,
     titre: 'Moteur motion design',
     etat: 'bloque',
-    detail: 'Attend : clé Anthropic (script et scènes), service de transcription, worker de rendu Remotion.',
+    detail:
+      'Attend : une clé d\u2019IA pour écrire le script depuis une idée (décision du donneur d\u2019ordre : sans pour l\u2019instant, le service est payant), un service de transcription, et un moteur de rendu vidéo.',
   },
   {
     num: 7,

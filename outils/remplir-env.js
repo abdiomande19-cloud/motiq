@@ -39,6 +39,11 @@ const QUESTIONS = [
     titre: "Jeton d'acces personnel",
     ou: 'supabase.com > ton avatar en haut a droite > Access tokens > Generate new token > nom : motiq-cli',
   },
+  {
+    cle: 'ANTHROPIC_API_KEY',
+    titre: 'Cle Anthropic (FACULTATIVE, PAYANTE)',
+    ou: 'console.anthropic.com > Settings > API Keys > Create Key > nom : motiq  (commence par sk-ant-)',
+  },
 ]
 
 /** Lit le fichier et renvoie { lignes, valeurs } (les commentaires sont ignores). */

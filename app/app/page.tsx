@@ -29,11 +29,12 @@ export default async function Accueil() {
 
   return (
     <>
-      <h1>Motiq — socle de l&apos;application</h1>
+      <h1>Motiq — l&apos;application tourne</h1>
       <p className="sous-titre">
-        Phase 2 : les fondations. L&apos;application démarre, les 13 écrans validés sont intégrés,
-        et la couche de données lit la <strong>vraie base Supabase</strong> (projet <code>motiq</code>,
-        Europe de l&apos;Ouest) — avec la sécurité RLS active sur les 8 tables.
+        Comptes, bibliothèque de projets, script découpé en scènes et choix du template
+        fonctionnent sur la <strong>vraie base Supabase</strong> (projet <code>motiq</code>, Europe
+        de l&apos;Ouest), avec la sécurité RLS active sur les 8 tables. L&apos;application est{' '}
+        <strong>installable</strong> sur ton téléphone ou ton ordinateur.
       </p>
 
       <h2>La couche de données répond</h2>
@@ -59,7 +60,7 @@ export default async function Accueil() {
           </tr>
           <tr>
             <td>Projets de l&apos;utilisateur de test</td>
-            <td>{projets.length} — lecture valide, aucune donnee inventee</td>
+            <td>{projets.length} — lecture valide, aucune donnée inventée</td>
           </tr>
           <tr>
             <td>Profil de test</td>
@@ -69,10 +70,18 @@ export default async function Accueil() {
       </table>
 
       <div className="note">
-        <strong>Ce qui n&apos;est pas encore branché :</strong> l&apos;authentification, le stockage
-        des médias, la génération vidéo et les paiements. Ils attendent les identifiants Supabase,
-        la clé Anthropic, le service de transcription et Stripe — voir l&apos;état du socle.
+        <strong>Ce qui reste à brancher — et ce que ça attend :</strong> la génération vidéo (une
+        clé d&apos;IA + un moteur de rendu), la transcription des notes vocales, le kit de marque, les
+        abonnements. <strong>Aucun de ces éléments n&apos;est simulé</strong> : ils sont écrits comme
+        non branchés, sur la <Link href="/etat">page état</Link>.
       </div>
+
+      <h2>Essaie maintenant</h2>
+      <p className="sous-titre">
+        Crée ton compte en quelques secondes, puis ouvre un projet pour écrire ton script scène par
+        scène.{' '}
+        <Link href="/connexion">Se connecter ou créer un compte →</Link>
+      </p>
 
       <h2>Les écrans validés de la phase 1</h2>
       <p className="sous-titre">
