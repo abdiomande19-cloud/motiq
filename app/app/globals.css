@@ -816,3 +816,125 @@ h3 {
   border-left-color: var(--accent);
   background: color-mix(in oklab, var(--accent) 10%, var(--fond-2));
 }
+
+/* ---------------------------------------------- apercu anime */
+
+.apercu-cadre {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 16px 0;
+}
+
+.apercu-ecran {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--rayon);
+  border: 1px solid var(--bord);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 18px;
+}
+
+.apercu-texte {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  width: 100%;
+}
+
+.apercu-couleurs {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+/* Les transitions reprennent les parametres des templates du catalogue. */
+.apercu-fondu {
+  animation: apercu-fondu 0.45s ease both;
+}
+
+.apercu-glissement {
+  animation: apercu-glissement 0.45s ease both;
+}
+
+.apercu-zoom {
+  animation: apercu-zoom 0.4s ease both;
+}
+
+.apercu-coupe {
+  animation: none;
+}
+
+@keyframes apercu-fondu {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes apercu-glissement {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes apercu-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.apercu-barre {
+  width: 100%;
+  max-width: 260px;
+  height: 6px;
+  background: var(--fond-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.apercu-progression {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.1s linear;
+}
+
+.apercu-commandes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apercu-fondu,
+  .apercu-glissement,
+  .apercu-zoom {
+    animation: none;
+  }
+
+  .apercu-progression {
+    transition: none;
+  }
+}

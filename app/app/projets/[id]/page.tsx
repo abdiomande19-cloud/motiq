@@ -8,6 +8,7 @@ import EditeurScenes from './editeur-scenes'
 import ChoixTemplate from './choix-template'
 import ApparenceProjet from './apparence'
 import ImagesProjet from './images'
+import Apercu from './apercu'
 import BoutonGeneration from './bouton-generation'
 
 export const metadata: Metadata = {
@@ -109,7 +110,7 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
     {
       fait: rendus.length > 0,
       texte: 'Lance la génération',
-      ancre: '#etape-5',
+      ancre: '#etape-6',
       requise: false,
     },
   ]
@@ -229,7 +230,19 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
       </p>
       <ImagesProjet projetId={projet.id} images={images} />
 
-      <h2 id="etape-5">5. La génération</h2>
+      <h2 id="etape-5">5. L&apos;aperçu</h2>
+      <p className="sous-titre">
+        Regarde et écoute le rythme de ta vidéo avant de la lancer : le vrai texte de tes scènes,
+        tes couleurs, ta police, et la transition de ton template.
+      </p>
+      <Apercu
+        scenes={script?.scenes ?? []}
+        apparence={projet.apparence}
+        template={templates.find((t) => t.id === projet.templateId) ?? null}
+        couleurParDefaut={kit?.couleurs ?? []}
+      />
+
+      <h2 id="etape-6">6. La génération</h2>
       <p className="sous-titre">
         Cette étape enregistre une demande réelle dans la table <code>render_jobs</code>.{' '}
         <strong>Le worker de rendu n&apos;est pas encore branché</strong> — il attend la phase 5

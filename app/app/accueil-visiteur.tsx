@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { depot } from '@/lib/data'
+import Apercu from './projets/[id]/apercu'
 
 /**
  * Motiq — accueil visiteur (ecran 01 de la phase 1).
@@ -25,6 +26,17 @@ const ETAPES = [
     titre: '3. Vous ajustez et exportez',
     texte: 'Éditeur visuel, aperçu, puis MP4 pour TikTok, Reels ou Shorts.',
   },
+]
+
+/**
+ * Scene de demonstration : c'est une maquette de texte, clairement annoncee
+ * comme telle. Elle ne vient PAS de la base — aucun visiteur ne doit croire
+ * qu'il regarde les donnees de quelqu'un.
+ */
+const SCENES_DEMO = [
+  { ordre: 1, texte: 'Une idée suffit.', dureeSecondes: 3 },
+  { ordre: 2, texte: 'Motiq écrit le script.', dureeSecondes: 3 },
+  { ordre: 3, texte: 'Et rend la vidéo.', dureeSecondes: 3 },
 ]
 
 interface Plan {
@@ -114,6 +126,28 @@ export default async function AccueilVisiteur() {
           </div>
         ))}
       </section>
+
+      <div className="section-titre">
+        <h2 id="apercu">Essaie l&apos;aperçu</h2>
+        <span className="carte-detail">démonstration — aucune inscription nécessaire</span>
+      </div>
+      <p className="sous-titre">
+        Voici ce que Motiq produit, et que tu pourras modifier : trois scènes, tes couleurs, ta
+        police, et une transition. Cette démonstration utilise un texte d&apos;exemple, pas des
+        données réelles.
+      </p>
+      <Apercu
+        scenes={SCENES_DEMO}
+        apparence={{ couleurs: ['#22d3c5', '#ff7a59'], police: 'Inter', musique: null }}
+        template={{
+          id: 'punch',
+          nom: 'Punch',
+          categorie: 'dynamique',
+          format: '9:16',
+          apercu: '',
+          parametres: { transition: 'zoom' },
+        }}
+      />
 
       <div className="section-titre">
         <h2 id="tarifs">Tarifs</h2>
