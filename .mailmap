@@ -1,0 +1,21 @@
+# ============================================================================
+# MOTIQ — correspondance des identités Git
+#
+# POURQUOI CE FICHIER
+# 18 commits sont signés « diomandeaboubkakr.contact@gmail.com ». C'est une
+# coquille : le compte réel de l'auteur, vérifié par sa propre inscription dans
+# l'application, est « diomandeaboubakr.contact@gmail.com ».
+#
+# CE QUE CE FICHIER FAIT
+# Il corrige l'AFFICHAGE dans git log, git shortlog et les interfaces (GitHub
+# n'en tient pas compte, mais l'historique local devient juste).
+#
+# CE QU'IL NE FAIT PAS
+# Il ne réécrit pas l'historique. Reécrire 44 commits et forcer la poussée
+# présenterait plus de risque (perte de données, divergences) que le bénéfice.
+# Les futurs commits utilisent déjà la bonne adresse (config locale du dépôt).
+#
+# Format : Nom canonique <email canonique> <email d'origine>
+# ============================================================================
+
+Aboubakr Diomandé <diomandeaboubakr.contact@gmail.com> <diomandeaboubkakr.contact@gmail.com>
