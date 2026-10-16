@@ -28,6 +28,7 @@ import type {
   Abonnement,
   Asset,
   KitMarque,
+  Plan,
   Profil,
   Projet,
   Rendu,
@@ -107,9 +108,14 @@ interface LigneAbonnement {
   id: string
   user_id: string
   plan: Abonnement['plan']
-  statut_stripe: string | null
+  statut_paiement: string | null
+  fournisseur: string
+  reference: string | null
+  plan_code: string | null
+  code_client: string | null
   periode_debut: string
   periode_fin: string | null
+  annule_le: string | null
 }
 
 interface LigneUsage {
@@ -190,9 +196,14 @@ const versAbonnement = (l: LigneAbonnement): Abonnement => ({
   id: l.id,
   userId: l.user_id,
   plan: l.plan,
-  statutStripe: l.statut_stripe,
+  statutPaiement: l.statut_paiement,
+  fournisseur: l.fournisseur,
+  reference: l.reference,
+  planCode: l.plan_code,
+  codeClient: l.code_client,
   periodeDebut: l.periode_debut,
-  periodeFin: l.periode_fin ?? '',
+  periodeFin: l.periode_fin,
+  annuleLe: l.annule_le,
 })
 
 const versUsage = (l: LigneUsage): Usage => ({
@@ -310,6 +321,25 @@ export class DepotSupabase implements DepotMotiq {
       throw new Error('Motiq : le quota n a pas pu etre renouvele (profil introuvable ?).')
     }
     return versProfil(ligne as LigneProfil)
+  }
+
+  async activerAbonnement(params: {
+    userId: string
+    plan: Plan
+    reference: string
+    statut: string
+    planCode: string | null
+    codeClient: string | null
+  }): Promise<void> {
+    const { error } = await this.client.rpc('activer_abonnement', {
+      p_user_id: params.userId,
+      p_plan: params.plan,
+      p_reference: params.reference,
+      p_statut: params.statut,
+      p_plan_code: params.planCode,
+      p_code_client: params.codeClient,
+    })
+    verifier(error, 'activation de l abonnement')
   }
 
   // ---------------------------------------------------------------- projets
@@ -597,9 +627,13 @@ export class DepotSupabase implements DepotMotiq {
       .insert({
         user_id: abo.userId,
         plan: abo.plan,
-        statut_stripe: abo.statutStripe,
+        statut_paiement: abo.statutPaiement,
+        fournisseur: abo.fournisseur,
+        reference: abo.reference,
+        plan_code: abo.planCode,
+        code_client: abo.codeClient,
         periode_debut: abo.periodeDebut,
-        periode_fin: abo.periodeFin || null,
+        periode_fin: abo.periodeFin,
       })
       .select('*')
       .single()

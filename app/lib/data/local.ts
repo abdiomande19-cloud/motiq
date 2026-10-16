@@ -21,12 +21,14 @@ import type {
   Abonnement,
   Asset,
   KitMarque,
+  Plan,
   Profil,
   Projet,
   Rendu,
   Template,
   Usage,
 } from './types'
+import { quotaDuPlan } from '../tarifs'
 
 const FICHIER = join(process.cwd(), '.donnees', 'motiq.json')
 
@@ -406,6 +408,51 @@ export class DepotLocal implements DepotMotiq {
     base.abonnements.push(complet)
     await ecrire(base)
     return complet
+  }
+
+  async activerAbonnement(params: {
+    userId: string
+    plan: Plan
+    reference: string
+    statut: string
+    planCode: string | null
+    codeClient: string | null
+  }): Promise<void> {
+    const base = await lire()
+    const profil = base.profils.find((p) => p.id === params.userId)
+    if (!profil) throw new Error(`Motiq : profil introuvable (${params.userId}).`)
+
+    // Le plan ET le quota du mois changent ENSEMBLE, comme dans la fonction
+    // SQL : sans cela, un client qui vient de payer resterait bloque a 3
+    // rendus jusqu'au mois suivant, alors qu'il a paye pour 10 ou 40.
+    profil.plan = params.plan
+    profil.quotaRestant = quotaDuPlan(params.plan)
+    profil.quotaMois = `${new Date().toISOString().slice(0, 7)}-01`
+    profil.majLe = maintenant()
+
+    const donnees = {
+      userId: params.userId,
+      plan: params.plan,
+      statutPaiement: params.statut,
+      fournisseur: 'paystack',
+      reference: params.reference,
+      planCode: params.planCode,
+      codeClient: params.codeClient,
+      periodeDebut: maintenant(),
+      periodeFin: null,
+      annuleLe: null,
+    }
+
+    // Reference deja vue : on met a jour au lieu d'ajouter. Un webhook rejoue
+    // ne doit pas creer un deuxieme abonnement pour un seul paiement.
+    const existant = base.abonnements.find((a) => a.reference === params.reference)
+    if (existant) {
+      Object.assign(existant, donnees)
+    } else {
+      base.abonnements.push({ id: id('abo'), ...donnees })
+    }
+
+    await ecrire(base)
   }
 
   async obtenirUsage(userId: string, mois: string): Promise<Usage | null> {

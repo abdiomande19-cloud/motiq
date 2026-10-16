@@ -141,15 +141,30 @@ export interface Rendu {
   majLe: string
 }
 
-/** subscriptions : id, user_id, plan, statut Stripe, periode en cours. */
+/**
+ * subscriptions : abonnement paye.
+ *
+ * Le fournisseur est Paystack — en Cote d'Ivoire, Stripe n'a pas de compte
+ * direct et y passe par Paystack (societe Stripe). Le nom des champs reste
+ * neutre : si le fournisseur change, la table ne ment pas.
+ */
 export interface Abonnement {
   id: string
   userId: string
   plan: Plan
-  /** Identifiant d'abonnement cote Stripe, ou null tant qu'aucun paiement. */
-  statutStripe: string | null
+  /** Statut renvoye par le fournisseur : success, active, cancelled... */
+  statutPaiement: string | null
+  /** Fournisseur de paiement : 'paystack' aujourd'hui. */
+  fournisseur: string
+  /** Reference de la transaction. Unique en base : un webhook rejoue ne cree pas de doublon. */
+  reference: string | null
+  /** Code du plan chez le fournisseur (PLN_...). */
+  planCode: string | null
+  /** Code client chez le fournisseur, pour retrouver ses paiements. */
+  codeClient: string | null
   periodeDebut: string
-  periodeFin: string
+  periodeFin: string | null
+  annuleLe: string | null
 }
 
 /** usage : id, user_id, mois, nombre de rendus, minutes generees. */

@@ -14,6 +14,7 @@ import type {
   Abonnement,
   Asset,
   KitMarque,
+  Plan,
   Profil,
   Projet,
   Rendu,
@@ -88,6 +89,25 @@ export interface DepotMotiq {
    * se renouveler son quota a volonte.
    */
   assurerQuotaDuMois(userId: string, quotaParDefaut: number): Promise<Profil>
+
+  /**
+   * Active un abonnement APRES verification du paiement.
+   *
+   * Fait trois choses en une transaction : change le plan, remet le quota du
+   * mois a la dotation du nouveau plan, et enregistre l'abonnement. Cet ordre
+   * evite l'etat intermediaire ou le client a paye mais reste bloque a 3 rendus.
+   *
+   * Operation serveur : un utilisateur ne doit jamais pouvoir s'ecrire un
+   * abonnement.
+   */
+  activerAbonnement(params: {
+    userId: string
+    plan: Plan
+    reference: string
+    statut: string
+    planCode: string | null
+    codeClient: string | null
+  }): Promise<void>
 
   // --- Projets ---------------------------------------------------------
   listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]>
