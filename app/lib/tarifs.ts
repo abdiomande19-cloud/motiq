@@ -18,7 +18,7 @@ import type { Plan } from '@/lib/data/types'
  * flottants, donc pas d'arrondi hasardeux au moment de facturer.
  */
 
-export const DEVISE = 'F CFA'
+export const DEVISE = 'Fr CFA'
 export const PERIODE = '/mois'
 
 export interface Tarif {
@@ -50,7 +50,7 @@ export const TARIFS: Record<Plan, Tarif> = {
 export const quotaDuPlan = (plan: Plan): number => TARIFS[plan].quotaMensuel
 
 /**
- * 4900 -> « 4 900 F CFA »
+ * 4900 -> « 4 900 Fr CFA »
  *
  * Formatage ecrit a la main plutot que par `toLocaleString` : le rendu depend
  * alors du moteur et de l'environnement, ce qui a deja produit des espaces
@@ -61,6 +61,25 @@ const grouper = (montant: number): string =>
 
 export const formaterPrix = (montant: number): string => `${grouper(montant)} ${DEVISE}`
 
-/** « 4 900 F/mois » — pour une phrase. */
+/** « 4 900 Fr CFA/mois » — pour une phrase. */
 export const formaterTarif = (plan: Plan): string =>
   `${formaterPrix(TARIFS[plan].prix)}${PERIODE}`
+
+/**
+ * Montant a envoyer a Paystack, en « sous-unite ».
+ *
+ * PIEGE MAJEUR, lu dans la documentation officielle Paystack :
+ *   « While there is no subunit for XOF, developers must multiply the amount
+ *     by 100 regardless. »
+ *
+ * Le Fr CFA n'a PAS de centimes — et pourtant Paystack attend quand meme le
+ * montant multiplie par 100. Envoyer 4900 ferait payer 49 Fr CFA au lieu de
+ * 4 900 : une erreur d'un facteur 100, que le client verrait sur sa facture.
+ *
+ * Cette fonction existe pour que la multiplication ne soit jamais ecrite a la
+ * main ailleurs : c'est le seul endroit ou l'on peut se tromper.
+ */
+export const montantPaystack = (plan: Plan): number => TARIFS[plan].prix * 100
+
+/** L'inverse, pour relire un montant recu de Paystack. */
+export const depuisPaystack = (montant: number): number => Math.round(montant / 100)

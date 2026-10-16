@@ -70,9 +70,9 @@ maquettes les lisent, ils ne les recopient pas.
 
 | Plan | Prix | Rendus / mois |
 |---|---|---|
-| Gratuit | 0 F CFA | 3 |
-| Pro | **4 900 F CFA** / mois | **10** |
-| Business | **9 900 F CFA** / mois | **40** |
+| Gratuit | 0 Fr CFA | 3 |
+| Pro | **4 900 Fr CFA** / mois | **10** |
+| Business | **9 900 Fr CFA** / mois | **40** |
 
 Montants et quotas **fixés par le donneur d'ordre** — ils ne sont pas déduits ni estimés. La
 maquette de phase 1 les annonçait « à définir » ; c'est remplacé.

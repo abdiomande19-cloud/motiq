@@ -54,7 +54,7 @@ SCREENS_1_7 = [
 <div class="plans">
   <div class="plan">
     <div class="plan-head"><h2 style="margin:0">Gratuit</h2><span class="badge">Toujours gratuit</span></div>
-    <div class="price">0 F CFA<span class="tiny" style="font-weight:400"> /mois</span></div>
+    <div class="price">0 Fr CFA<span class="tiny" style="font-weight:400"> /mois</span></div>
     <ul>
       <li>Quelques vidéos par mois <span class="tiny">(nombre à définir)</span></li>
       <li>Qualité standard</li>
@@ -66,7 +66,7 @@ SCREENS_1_7 = [
   </div>
   <div class="plan hi">
     <div class="plan-head"><h2 style="margin:0">Pro</h2><span class="badge acc">Populaire</span></div>
-    <div class="price">4 900 F CFA<span class="tiny" style="font-weight:400"> /mois</span></div>
+    <div class="price">4 900 Fr CFA<span class="tiny" style="font-weight:400"> /mois</span></div>
     <ul>
       <li>Exports HD sans filigrane</li>
       <li>Kit de marque (logo, couleurs, police)</li>
@@ -78,7 +78,7 @@ SCREENS_1_7 = [
   </div>
   <div class="plan">
     <div class="plan-head"><h2 style="margin:0">Business</h2><span class="badge">à valider</span></div>
-    <div class="price">9 900 F CFA<span class="tiny" style="font-weight:400"> /mois</span></div>
+    <div class="price">9 900 Fr CFA<span class="tiny" style="font-weight:400"> /mois</span></div>
     <ul>
       <li>Haute qualité</li>
       <li>Rendu prioritaire</li>
