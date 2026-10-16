@@ -203,6 +203,18 @@ export interface DepotMotiq {
   listerRendus(userId: string, projetId: string): Promise<Rendu[]>
   majProgressionRendu(renduId: string, progression: number, statut: Rendu['statut']): Promise<Rendu>
 
+  /**
+   * Lien temporaire vers le fichier MP4 d'un rendu.
+   *
+   * Le stockage est PRIVE : aucun fichier n'est accessible sans lien signe.
+   * C'est deliberé — une video appartient a son auteur, pas a quiconque
+   * devine l'adresse. Le lien expire, et il n'est delivre qu'apres
+   * verification que le rendu appartient bien a la personne qui le demande.
+   *
+   * Rend `null` si le rendu n'est pas termine ou n'appartient pas au demandeur.
+   */
+  lienVideo(userId: string, renduId: string, secondes?: number): Promise<string | null>
+
   // --- Kit de marque ---------------------------------------------------
   obtenirKitMarque(userId: string): Promise<KitMarque | null>
   enregistrerKitMarque(kit: Omit<KitMarque, 'creeLe' | 'majLe'>): Promise<KitMarque>

@@ -721,6 +721,49 @@ export class DepotSupabase implements DepotMotiq {
     return versRendu(data as LigneRendu)
   }
 
+  /**
+   * Lien temporaire vers le MP4 d'un rendu.
+   *
+   * DEUX CONTROLES AVANT DE SIGNER, DANS CET ORDRE :
+   *
+   *   1. le rendu appartient-il bien a la personne qui le demande ? On lit la
+   *      ligne en filtrant sur le proprietaire du projet. Sans ce filtre, un
+   *      utilisateur connecte obtiendrait un lien vers la video d'un autre en
+   *      devinant un identifiant. RLS s'en chargerait aussi, mais on ne
+   *      construit pas un lien prive sur une seule barriere.
+   *
+   *   2. le rendu est-il termine ? Signer le lien d'un fichier qui n'existe pas
+   *      encore donnerait une video cassee, et l'utilisateur croirait a une
+   *      panne. On rend `null` : c'est explicite.
+   *
+   * Le lien EXPIRE (une heure par defaut). Un lien permanent serait un mot de
+   * passe : partage une fois, il ouvre la video pour toujours.
+   */
+  async lienVideo(userId: string, renduId: string, secondes = 3600): Promise<string | null> {
+    const { data, error } = await this.client
+      .from('render_jobs')
+      .select('url_mp4, statut, projet_id')
+      .eq('id', renduId)
+      .single()
+
+    if (error || !data) return null
+
+    // Controle 1 : la propriete.
+    const projet = await this.obtenirProjet(userId, (data as { projet_id: string }).projet_id)
+    if (!projet) return null
+
+    // Controle 2 : le fichier existe vraiment.
+    const ligne = data as { url_mp4: string | null; statut: string }
+    if (ligne.statut !== 'termine' || !ligne.url_mp4) return null
+
+    const { data: signe, error: erreurSignature } = await this.client.storage
+      .from('medias')
+      .createSignedUrl(ligne.url_mp4, secondes)
+
+    if (erreurSignature) return null
+    return signe?.signedUrl ?? null
+  }
+
   // ---------------------------------------------------------------- kit de marque
   async obtenirKitMarque(userId: string): Promise<KitMarque | null> {
     const { data, error } = await this.client

@@ -372,6 +372,14 @@ export class DepotLocal implements DepotMotiq {
       .sort((a, b) => b.creeLe.localeCompare(a.creeLe))
   }
 
+  /**
+   * Pas de stockage de fichiers en mode local : aucune video n'est deposee,
+   * donc aucun lien a signer. On rend `null` plutot qu'une fausse adresse.
+   */
+  async lienVideo(_userId: string, _renduId: string, _secondes?: number): Promise<string | null> {
+    return null
+  }
+
   async majProgressionRendu(
     renduId: string,
     progression: number,

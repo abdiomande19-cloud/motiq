@@ -73,6 +73,19 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
     })),
   )
 
+  // Les videos terminees : un lien signe par rendu, valable une heure.
+  // Le stockage est prive — sans lien signe, le navigateur recevrait un refus,
+  // et l'utilisateur croirait sa video perdue.
+  const liensVideo = new Map<string, string>()
+  await Promise.all(
+    rendus
+      .filter((r) => r.statut === 'termine')
+      .map(async (r) => {
+        const url = await depot.lienVideo(session.user.id, r.id)
+        if (url) liensVideo.set(r.id, url)
+      }),
+  )
+
   const script = projet.script
   const scenesTotal = script?.scenes.length ?? 0
   const duree = script?.dureeTotaleSecondes ?? 0
@@ -253,10 +266,10 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
 
       <h2 id="etape-6">6. La génération</h2>
       <p className="sous-titre">
-        Cette étape enregistre une demande réelle dans la table <code>render_jobs</code>.{' '}
-        <strong>Le worker de rendu n&apos;est pas encore branché</strong> — il attend la phase 5
-        (clé Anthropic + moteur de rendu). La demande restera donc « en attente » : c&apos;est
-        écrit tel quel, rien n&apos;est simulé.
+        Cette étape enregistre une demande dans la table <code>render_jobs</code>, puis le moteur de
+        rendu fabrique la vidéo sur un service dédié et la dépose dans ton espace privé. Compte une
+        à deux minutes pour une vidéo courte&nbsp;: le rendu encode réellement chaque image en
+        1080&nbsp;×&nbsp;1920.
       </p>
       <BoutonGeneration
         projetId={projet.id}
@@ -283,6 +296,7 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
               <th>Demandé le</th>
               <th>Statut</th>
               <th>Progression</th>
+              <th>Vidéo</th>
               <th>Erreur</th>
             </tr>
           </thead>
@@ -292,6 +306,17 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
                 <td>{new Date(rendu.creeLe).toLocaleString('fr-FR')}</td>
                 <td>{LIBELLE_RENDU[rendu.statut] ?? rendu.statut}</td>
                 <td>{rendu.progression} %</td>
+                <td>
+                  {liensVideo.has(rendu.id) ? (
+                    <a href={liensVideo.get(rendu.id)} className="bouton-mini" download>
+                      Télécharger
+                    </a>
+                  ) : rendu.statut === 'termine' ? (
+                    <span className="carte-detail">lien indisponible</span>
+                  ) : (
+                    <span className="carte-detail">—</span>
+                  )}
+                </td>
                 <td>{rendu.erreur ?? '—'}</td>
               </tr>
             ))}

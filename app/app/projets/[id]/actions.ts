@@ -208,14 +208,14 @@ export async function lancerGeneration(
       return {
         erreur:
           `Quota épuisé : ${profil.quotaRestant} rendu restant ce mois-ci. ` +
-          "Les plans Pro et Business ne sont pas encore disponibles (le paiement n'est pas branché). " +
-          'Ton quota se renouvellera le mois prochain.',
+          'Passe au plan Pro (10 rendus) ou Business (40 rendus) depuis la page Abonnement. ' +
+          'Ton quota se renouvellera de toute façon le mois prochain.',
       }
     }
 
-    // L'enregistrement du job est REEL : la ligne existe dans render_jobs.
-    // En revanche, aucun worker ne la traitera tant que la phase 5 n'est pas
-    // branchee — c'est ecrit noir sur blanc dans l'interface, pas simule.
+    // La demande est enregistree, et le worker de rendu la prendra en charge :
+    // il tourne sur un service dedie (le rendu video ne peut pas se faire dans
+    // l'application, voir le cahier des charges 10.1).
     await depot.creerRendu({ projetId, plan: profil.plan })
     await depot.mettreAJourProjet(s.user.id, projetId, { statut: 'en_generation' })
 
@@ -230,9 +230,9 @@ export async function lancerGeneration(
     revalidatePath('/reglages')
     return {
       succes:
-        `Demande enregistree dans render_jobs (statut « en attente »). ` +
+        `Demande enregistrée — ta vidéo est en fabrication. ` +
         `Quota restant : ${profilApres.quotaRestant}. ` +
-        "Le worker de rendu n'est pas encore branche : rien ne sera produit pour l'instant.",
+        'Compte une à deux minutes : recharge cette page, le lien de la vidéo apparaîtra.',
     }
   } catch (erreur) {
     return {
