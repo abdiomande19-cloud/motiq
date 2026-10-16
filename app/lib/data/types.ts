@@ -77,6 +77,15 @@ export interface Script {
   dureeTotaleSecondes: number
 }
 
+/** Reglages visuels d'un projet. Null = le projet herite du kit de marque. */
+export interface Apparence {
+  /** 2 ou 3 couleurs, format hexa (#RRGGBB). */
+  couleurs: string[]
+  police: string
+  /** Chemin de la musique dans le stockage, ou null si aucune. */
+  musique: string | null
+}
+
 /** projects : id, user_id, titre, statut, entree source, script, template, dates. */
 export interface Projet {
   id: string
@@ -88,6 +97,8 @@ export interface Projet {
   idee: string | null
   script: Script | null
   templateId: string | null
+  /** Couleurs, police et musique. Null tant que rien n'a ete choisi. */
+  apparence: Apparence | null
   creeLe: string
   majLe: string
 }

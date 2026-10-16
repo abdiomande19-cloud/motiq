@@ -24,13 +24,32 @@ export const BUCKET = 'medias'
 export const TYPES_ACCEPTES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
 export const TAILLE_MAX = 2 * 1024 * 1024
 
+/** Sons acceptes, et leur limite (une piste d'une minute suffit). */
+export const TYPES_SON = ['audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/wav', 'audio/ogg']
+export const TAILLE_SON_MAX = 8 * 1024 * 1024
+
 export interface ResultatDepot {
   chemin?: string
   erreur?: string
 }
 
+export interface OptionsDepot {
+  types: string[]
+  tailleMax: number
+  /** Nom du probleme de format, pour un message clair. */
+  descriptionTypes: string
+}
+
 /** Depose un fichier dans le dossier de l'utilisateur connecte. */
-export async function deposerFichier(dossier: string, fichier: File): Promise<ResultatDepot> {
+export async function deposerFichier(
+  dossier: string,
+  fichier: File,
+  options: OptionsDepot = {
+    types: TYPES_ACCEPTES,
+    tailleMax: TAILLE_MAX,
+    descriptionTypes: 'PNG, JPEG, WebP ou SVG',
+  },
+): Promise<ResultatDepot> {
   const supabase = await creerClientServeur()
   const {
     data: { user },
@@ -38,11 +57,13 @@ export async function deposerFichier(dossier: string, fichier: File): Promise<Re
 
   if (!user) return { erreur: 'Ta session a expiré. Reconnecte-toi.' }
   if (fichier.size === 0) return { erreur: 'Le fichier est vide.' }
-  if (fichier.size > TAILLE_MAX) {
-    return { erreur: `Le fichier est trop lourd (${Math.round(fichier.size / 1024)} Ko, maximum 2048 Ko).` }
+  if (fichier.size > options.tailleMax) {
+    return {
+      erreur: `Le fichier est trop lourd (${Math.round(fichier.size / 1024)} Ko, maximum ${Math.round(options.tailleMax / 1024)} Ko).`,
+    }
   }
-  if (!TYPES_ACCEPTES.includes(fichier.type)) {
-    return { erreur: 'Format non accepté : PNG, JPEG, WebP ou SVG uniquement.' }
+  if (!options.types.includes(fichier.type)) {
+    return { erreur: `Format non accepté : ${options.descriptionTypes} uniquement.` }
   }
 
   // On nettoie le nom : un nom de fichier est une donnee venue de l'exterieur.

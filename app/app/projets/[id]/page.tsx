@@ -3,8 +3,10 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { creerClientServeur } from '@/lib/supabase/server'
 import { obtenirDepotPourJeton } from '@/lib/data'
+import { lienSigne } from '@/lib/fichiers'
 import EditeurScenes from './editeur-scenes'
 import ChoixTemplate from './choix-template'
+import ApparenceProjet from './apparence'
 import BoutonGeneration from './bouton-generation'
 
 export const metadata: Metadata = {
@@ -49,10 +51,14 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
   // il n'existe pas. On ne revele pas son existence.
   if (!projet) notFound()
 
-  const [assets, rendus] = await Promise.all([
+  const [assets, rendus, kit] = await Promise.all([
     depot.listerAssets(session.user.id, id),
     depot.listerRendus(session.user.id, id),
+    depot.obtenirKitMarque(session.user.id),
   ])
+
+  // La musique est dans un bucket prive : on fabrique un lien signe pour la lire.
+  const lienMusique = await lienSigne(projet.apparence?.musique ?? null)
 
   const script = projet.script
   const scenesTotal = script?.scenes.length ?? 0
@@ -134,7 +140,21 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         templateActuel={projet.templateId}
       />
 
-      <h2>3. La génération</h2>
+      <h2>3. L&apos;apparence</h2>
+      <p className="sous-titre">
+        Couleurs, police et musique. Par défaut, on te propose celles de ton{' '}
+        <Link href="/kit-marque">kit de marque</Link> ; tu peux les changer pour ce projet
+        seulement.
+      </p>
+      <ApparenceProjet
+        projetId={projet.id}
+        apparence={projet.apparence}
+        couleursDuKit={kit?.couleurs ?? []}
+        texteApercu={script?.scenes[0]?.texte || projet.titre}
+        lienMusique={lienMusique}
+      />
+
+      <h2>4. La génération</h2>
       <p className="sous-titre">
         Cette étape enregistre une demande réelle dans la table <code>render_jobs</code>.{' '}
         <strong>Le worker de rendu n&apos;est pas encore branché</strong> — il attend la phase 5

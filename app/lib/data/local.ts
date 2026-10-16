@@ -159,6 +159,7 @@ export class DepotLocal implements DepotMotiq {
       idee: nouveau.idee ?? null,
       script: null,
       templateId: null,
+      apparence: null,
       creeLe: maintenant(),
       majLe: maintenant(),
     }

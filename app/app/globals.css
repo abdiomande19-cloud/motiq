@@ -589,3 +589,26 @@ code {
   border: 1px solid rgba(255, 255, 255, 0.22);
   vertical-align: middle;
 }
+
+/* ---------------------------------------------- musique du projet */
+
+h3 {
+  margin: 24px 0 8px;
+  font-size: 1.05rem;
+}
+
+.musique-cadre {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--fond-2);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 14px;
+  margin: 10px 0 16px;
+}
+
+.musique-lecteur {
+  width: 100%;
+  max-width: 460px;
+}

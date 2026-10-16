@@ -77,6 +77,7 @@ interface LigneProjet {
   idee: string | null
   script: Script | null
   template_id: string | null
+  apparence: Projet['apparence']
   cree_le: string
   maj_le: string
 }
@@ -158,6 +159,7 @@ const versProjet = (l: LigneProjet): Projet => ({
   idee: l.idee,
   script: l.script,
   templateId: l.template_id,
+  apparence: l.apparence ?? null,
   creeLe: l.cree_le,
   majLe: l.maj_le,
 })
@@ -311,13 +313,16 @@ export class DepotSupabase implements DepotMotiq {
   async mettreAJourProjet(
     userId: string,
     projetId: string,
-    changements: Partial<Pick<Projet, 'titre' | 'statut' | 'script' | 'templateId'>>,
+    changements: Partial<
+      Pick<Projet, 'titre' | 'statut' | 'script' | 'templateId' | 'apparence'>
+    >,
   ): Promise<Projet> {
     const charge: Record<string, unknown> = {}
     if (changements.titre !== undefined) charge.titre = changements.titre
     if (changements.statut !== undefined) charge.statut = changements.statut
     if (changements.script !== undefined) charge.script = changements.script
     if (changements.templateId !== undefined) charge.template_id = changements.templateId
+    if (changements.apparence !== undefined) charge.apparence = changements.apparence
 
     const { data, error } = await this.client
       .from('projects')
@@ -346,6 +351,7 @@ export class DepotSupabase implements DepotMotiq {
         idee: original.idee,
         script: original.script,
         template_id: original.templateId,
+        apparence: original.apparence,
       })
       .select('*')
       .single()

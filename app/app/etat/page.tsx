@@ -41,10 +41,10 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
   },
   {
     num: 5,
-    titre: 'Installation et kit de marque',
+    titre: 'Personnalisation et installation',
     etat: 'fait',
     detail:
-      'Application installable (manifeste, icônes 192/512 px dont maskable, service worker, bouton d\u2019installation). Kit de marque : logo, 2 ou 3 couleurs, police, avec aperçu réel. Le stockage est privé : le logo se lit par un lien signé d\u2019une heure. Vérifié : un autre compte ne peut ni déposer ni lire dans ton dossier, même en connaissant le nom du fichier.',
+      'Application installable (manifeste, icônes 192/512 px dont maskable, service worker, bouton d\u2019installation). Kit de marque : logo, 2 ou 3 couleurs, police, avec aperçu réel. Apparence par projet : couleurs, police et musique, héritées du kit de marque et modifiables projet par projet. Le stockage est privé : logo et musique se lisent par un lien signé d\u2019une heure. Vérifié : un autre compte ne peut ni déposer ni lire dans ton dossier.',
   },
   {
     num: 6,

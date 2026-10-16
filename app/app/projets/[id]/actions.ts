@@ -12,6 +12,12 @@
 import { revalidatePath } from 'next/cache'
 import { creerClientServeur } from '@/lib/supabase/server'
 import { obtenirDepotPourJeton } from '@/lib/data'
+import { estPoliceValide } from '@/lib/polices'
+import {
+  deposerFichier,
+  TAILLE_SON_MAX,
+  TYPES_SON,
+} from '@/lib/fichiers'
 import type { Scene } from '@/lib/data'
 
 export interface EtatAction {
@@ -189,4 +195,130 @@ export async function lancerGeneration(
       'Demande enregistree dans render_jobs (statut « en attente »). ' +
       "Le worker de rendu n'est pas encore branche : rien ne sera produit pour l'instant.",
   }
+}
+
+// ------------------------------------------------------------------ apparence
+
+/** Analyse les couleurs et la police envoyees par le navigateur. */
+function analyserApparence(donnees: FormData): { couleurs?: string[]; police?: string; erreur?: string } {
+  const couleurs = [1, 2, 3]
+    .map((n) => String(donnees.get(`couleur${n}`) ?? '').trim())
+    .filter((c) => c.length > 0)
+
+  if (couleurs.length < 2 || couleurs.length > 3) {
+    return { erreur: 'Il faut 2 ou 3 couleurs.' }
+  }
+  for (const couleur of couleurs) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(couleur)) {
+      return { erreur: `« ${couleur} » n'est pas au format #RRGGBB.` }
+    }
+  }
+
+  const police = String(donnees.get('police') ?? '').trim()
+  if (!estPoliceValide(police)) {
+    return { erreur: 'Cette police ne fait pas partie de la liste.' }
+  }
+
+  return { couleurs, police }
+}
+
+export async function enregistrerApparence(
+  _etat: EtatAction,
+  donnees: FormData,
+): Promise<EtatAction> {
+  const s = await session()
+  if (!s) return { erreur: 'Ta session a expire. Reconnecte-toi.' }
+
+  const projetId = String(donnees.get('projetId') ?? '')
+  const analyse = analyserApparence(donnees)
+  if (analyse.erreur) return { erreur: analyse.erreur }
+
+  const musique = String(donnees.get('musique') ?? '').trim() || null
+
+  try {
+    const depot = obtenirDepotPourJeton(s.access_token)
+    await depot.mettreAJourProjet(s.user.id, projetId, {
+      apparence: { couleurs: analyse.couleurs!, police: analyse.police!, musique },
+    })
+  } catch (erreur) {
+    return {
+      erreur: `L'enregistrement a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
+    }
+  }
+
+  revalidatePath(`/projets/${projetId}`)
+  return { succes: 'Apparence enregistree.' }
+}
+
+export async function deposerMusique(
+  _etat: EtatAction,
+  donnees: FormData,
+): Promise<EtatAction> {
+  const s = await session()
+  if (!s) return { erreur: 'Ta session a expire. Reconnecte-toi.' }
+
+  const projetId = String(donnees.get('projetId') ?? '')
+
+  // Les couleurs et la police voyagent avec ce formulaire : sans elles, le
+  // depot de musique effacerait les reglages visuels.
+  const analyse = analyserApparence(donnees)
+  if (analyse.erreur) return { erreur: analyse.erreur }
+
+  const fichier = donnees.get('musique')
+  if (!(fichier instanceof File) || fichier.size === 0) {
+    return { erreur: 'Choisis un fichier audio.' }
+  }
+
+  const depotFichier = await deposerFichier('musique', fichier, {
+    types: TYPES_SON,
+    tailleMax: TAILLE_SON_MAX,
+    descriptionTypes: 'MP3, M4A, AAC, WAV ou OGG',
+  })
+  if (depotFichier.erreur || !depotFichier.chemin) {
+    return { erreur: depotFichier.erreur ?? 'Depot impossible.' }
+  }
+
+  try {
+    const depot = obtenirDepotPourJeton(s.access_token)
+    await depot.mettreAJourProjet(s.user.id, projetId, {
+      apparence: {
+        couleurs: analyse.couleurs!,
+        police: analyse.police!,
+        musique: depotFichier.chemin,
+      },
+    })
+  } catch (erreur) {
+    return {
+      erreur: `L'enregistrement a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
+    }
+  }
+
+  revalidatePath(`/projets/${projetId}`)
+  return { succes: 'Musique deposee. Elle n est lisible que par toi (stockage prive).' }
+}
+
+export async function retirerMusique(
+  _etat: EtatAction,
+  donnees: FormData,
+): Promise<EtatAction> {
+  const s = await session()
+  if (!s) return { erreur: 'Ta session a expire. Reconnecte-toi.' }
+
+  const projetId = String(donnees.get('projetId') ?? '')
+  const analyse = analyserApparence(donnees)
+  if (analyse.erreur) return { erreur: analyse.erreur }
+
+  try {
+    const depot = obtenirDepotPourJeton(s.access_token)
+    await depot.mettreAJourProjet(s.user.id, projetId, {
+      apparence: { couleurs: analyse.couleurs!, police: analyse.police!, musique: null },
+    })
+  } catch (erreur) {
+    return {
+      erreur: `L'enregistrement a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
+    }
+  }
+
+  revalidatePath(`/projets/${projetId}`)
+  return { succes: 'Musique retiree.' }
 }

@@ -63,7 +63,7 @@ export interface DepotMotiq {
   mettreAJourProjet(
     userId: string,
     projetId: string,
-    changements: Partial<Pick<Projet, 'titre' | 'statut' | 'script' | 'templateId'>>,
+    changements: Partial<Pick<Projet, 'titre' | 'statut' | 'script' | 'templateId' | 'apparence'>>,
   ): Promise<Projet>
   dupliquerProjet(userId: string, projetId: string): Promise<Projet>
   supprimerProjet(userId: string, projetId: string): Promise<void>
