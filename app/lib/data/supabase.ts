@@ -27,12 +27,15 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type {
   Abonnement,
   Asset,
+  Avis,
   KitMarque,
+  MonAvis,
   Plan,
   Profil,
   Projet,
   Rendu,
   Script,
+  Statistiques,
   Template,
   Usage,
 } from './types'
@@ -47,6 +50,7 @@ interface LigneProfil {
   plan: Profil['plan']
   quota_restant: number
   quota_mois: string
+  est_moderateur: boolean
   cree_le: string
   maj_le: string
 }
@@ -135,6 +139,7 @@ const versProfil = (l: LigneProfil): Profil => ({
   plan: l.plan,
   quotaRestant: l.quota_restant,
   quotaMois: l.quota_mois,
+  estModerateur: Boolean(l.est_moderateur),
   creeLe: l.cree_le,
   majLe: l.maj_le,
 })
@@ -190,6 +195,17 @@ const versRendu = (l: LigneRendu): Rendu => ({
   erreur: l.erreur,
   creeLe: l.cree_le,
   majLe: l.maj_le,
+})
+
+/** Convertit une ligne `reviews` en objet du domaine. */
+const versMonAvis = (l: Record<string, unknown>): MonAvis => ({
+  id: String(l.id),
+  note: Number(l.note),
+  commentaire: String(l.commentaire),
+  statut: (l.statut as MonAvis['statut']) ?? 'publie',
+  motifMasquage: l.motif_masquage ? String(l.motif_masquage) : null,
+  creeLe: String(l.cree_le),
+  majLe: String(l.maj_le ?? l.cree_le),
 })
 
 const versAbonnement = (l: LigneAbonnement): Abonnement => ({
@@ -353,6 +369,124 @@ export class DepotSupabase implements DepotMotiq {
       p_statut: params.statut,
     })
     verifier(error, 'resiliation de l abonnement')
+  }
+
+  // ------------------------------------------------------ avis et stats
+  async statistiquesPubliques(): Promise<Statistiques> {
+    const { data, error } = await this.client.rpc('statistiques_publiques')
+    verifier(error, 'lecture des statistiques')
+    const d = (data ?? {}) as Record<string, unknown>
+    return {
+      utilisateurs: Number(d.utilisateurs ?? 0),
+      projets: Number(d.projets ?? 0),
+      avis: Number(d.avis ?? 0),
+      // null reste null : « pas encore de note » n'est pas « note de zero ».
+      noteMoyenne:
+        d.note_moyenne === null || d.note_moyenne === undefined ? null : Number(d.note_moyenne),
+      clientsSatisfaits: Number(d.clients_satisfaits ?? 0),
+    }
+  }
+
+  async listerAvis(limite = 50): Promise<Avis[]> {
+    const { data, error } = await this.client.rpc('avis_publies', { p_limite: limite })
+    verifier(error, 'lecture des avis')
+    return ((data ?? []) as Record<string, unknown>[]).map((l) => ({
+      id: String(l.id),
+      note: Number(l.note),
+      commentaire: String(l.commentaire),
+      auteur: String(l.auteur),
+      creeLe: String(l.cree_le),
+      estAMoi: Boolean(l.est_a_moi),
+    }))
+  }
+
+  async monAvis(): Promise<MonAvis | null> {
+    const { data, error } = await this.client.rpc('mon_avis')
+    verifier(error, 'lecture de mon avis')
+    const l = Array.isArray(data) ? data[0] : data
+    if (!l) return null
+    return versMonAvis(l as Record<string, unknown>)
+  }
+
+  async enregistrerAvis(params: {
+    userId: string
+    note: number
+    commentaire: string
+  }): Promise<MonAvis> {
+    const { data, error } = await this.client
+      .from('reviews')
+      .insert({ user_id: params.userId, note: params.note, commentaire: params.commentaire })
+      .select('*')
+      .single()
+    verifier(error, 'enregistrement de l avis')
+    return versMonAvis(data as Record<string, unknown>)
+  }
+
+  async modifierAvis(params: {
+    userId: string
+    avisId: string
+    note: number
+    commentaire: string
+  }): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('reviews')
+      .update({ note: params.note, commentaire: params.commentaire, maj_le: new Date().toISOString() })
+      .eq('id', params.avisId)
+      .eq('user_id', params.userId)
+      .select('id')
+    verifier(error, 'modification de l avis')
+    return Array.isArray(data) && data.length > 0
+  }
+
+  async supprimerAvis(userId: string, avisId: string): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('reviews')
+      .delete()
+      .eq('id', avisId)
+      .eq('user_id', userId)
+      .select('id')
+    verifier(error, 'suppression de l avis')
+    return Array.isArray(data) && data.length > 0
+  }
+
+  async modererAvis(params: {
+    avisId: string
+    statut: 'publie' | 'masque'
+    motif: string | null
+  }): Promise<boolean> {
+    // Aucun controle de role ici : la politique RLS « avis: moderer » refuse
+    // deja la mise a jour a quiconque n'est pas moderateur. Un filtre
+    // supplementaire dans le code donnerait l'illusion que c'est lui qui
+    // protege — et il suffirait de l'oublier ailleurs pour ouvrir la porte.
+    const { data, error } = await this.client
+      .from('reviews')
+      .update({
+        statut: params.statut,
+        motif_masquage: params.statut === 'masque' ? params.motif : null,
+        maj_le: new Date().toISOString(),
+      })
+      .eq('id', params.avisId)
+      .select('id')
+    verifier(error, 'moderation de l avis')
+    return Array.isArray(data) && data.length > 0
+  }
+
+  async listerTousLesAvis(userId: string): Promise<MonAvis[]> {
+    const { data, error } = await this.client
+      .from('profiles')
+      .select('est_moderateur')
+      .eq('id', userId)
+      .maybeSingle()
+    verifier(error, 'verification du role de moderateur')
+    if (!data?.est_moderateur) return []
+
+    const { data: avis, error: erreurAvis } = await this.client
+      .from('reviews')
+      .select('*')
+      .order('cree_le', { ascending: false })
+      .limit(200)
+    verifier(erreurAvis, 'lecture de tous les avis')
+    return ((avis ?? []) as Record<string, unknown>[]).map(versMonAvis)
   }
 
   // ---------------------------------------------------------------- projets

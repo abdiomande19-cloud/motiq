@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import { depot } from '@/lib/data'
+import { obtenirDepotPourJeton } from '@/lib/data'
+import { creerClientServeur } from '@/lib/supabase/server'
 import { formaterPrix, PERIODE, TARIFS } from '@/lib/tarifs'
+import BlocStatistiques from './bloc-statistiques'
+import SectionAvis from './section-avis'
 import Apercu from './projets/[id]/apercu'
 
 /**
@@ -93,6 +97,26 @@ export default async function AccueilVisiteur() {
   // Lecture reelle : le nombre de styles affiche vient de la base, pas du code.
   const templates = await depot.listerTemplates()
 
+  // Chiffres et avis : TOUS lus dans la base. Aucun n'est estime ni arrondi.
+  // La fonction de statistiques ne rend que des agrégats — jamais un nom, un
+  // email ou un identifiant.
+  const [chiffres, avis] = await Promise.all([
+    depot.statistiquesPubliques(),
+    depot.listerAvis(20),
+  ])
+
+  // Un visiteur non connecte voit les avis ; un utilisateur connecte voit en
+  // plus le sien, pour pouvoir le corriger ou le supprimer.
+  const supabase = await creerClientServeur()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  let monAvis = null
+  if (session) {
+    monAvis = await obtenirDepotPourJeton(session.access_token).monAvis(session.user.id)
+  }
+
   return (
     <>
       <section className="hero">
@@ -153,8 +177,14 @@ export default async function AccueilVisiteur() {
       />
 
       <div className="section-titre">
+        <h2 id="chiffres">Motiq en chiffres</h2>
+        <span className="carte-detail">lus dans la base, à l&apos;instant</span>
+      </div>
+      <BlocStatistiques chiffres={chiffres} />
+
+      <div className="section-titre">
         <h2 id="tarifs">Tarifs</h2>
-        <span className="carte-detail">quotas provisoires — à valider</span>
+        <span className="carte-detail">3 rendus offerts chaque mois, sans carte bancaire</span>
       </div>
 
       <div className="plans">
@@ -234,6 +264,8 @@ export default async function AccueilVisiteur() {
           </tr>
         </tbody>
       </table>
+
+      <SectionAvis avis={avis} monAvis={monAvis} connecte={Boolean(session)} />
 
       <div className="section-titre">
         <h2>Aller plus loin</h2>

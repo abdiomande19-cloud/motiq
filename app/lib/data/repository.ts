@@ -13,11 +13,14 @@
 import type {
   Abonnement,
   Asset,
+  Avis,
   KitMarque,
+  MonAvis,
   Plan,
   Profil,
   Projet,
   Rendu,
+  Statistiques,
   Template,
   Usage,
 } from './types'
@@ -144,6 +147,50 @@ export interface DepotMotiq {
    * retirer aussi le fichier du stockage, sans lecture supplementaire.
    */
   supprimerAsset(userId: string, assetId: string): Promise<Asset | null>
+
+  // --- Avis et statistiques ---------------------------------------------
+  /** Compteurs publics, lus dans la base. Aucune valeur inventee. */
+  statistiquesPubliques(): Promise<Statistiques>
+
+  /** Avis publies, avec un nom abrege. */
+  listerAvis(limite?: number): Promise<Avis[]>
+
+  /** Mon avis, meme masque par un moderateur. */
+  monAvis(userId: string): Promise<MonAvis | null>
+
+  /**
+   * Cree mon avis. Un seul par personne : la base le garantit par une
+   * contrainte unique, pas seulement ce code.
+   */
+  enregistrerAvis(params: { userId: string; note: number; commentaire: string }): Promise<MonAvis>
+
+  /** Modifie MON avis. Rend false si l'avis n'est pas le mien. */
+  modifierAvis(params: {
+    userId: string
+    avisId: string
+    note: number
+    commentaire: string
+  }): Promise<boolean>
+
+  /** Supprime MON avis. */
+  supprimerAvis(userId: string, avisId: string): Promise<boolean>
+
+  /**
+   * Change le statut d'un avis (moderation). Sert AUSSI a remettre en ligne :
+   * une moderation sans retour en arriere transforme une erreur de jugement en
+   * censure definitive.
+   *
+   * La base verifie elle-meme que l'appelant est moderateur : la politique RLS
+   * porte la regle, pas ce code.
+   */
+  modererAvis(params: {
+    avisId: string
+    statut: 'publie' | 'masque'
+    motif: string | null
+  }): Promise<boolean>
+
+  /** Tous les avis, y compris masques — reserve au moderateur. */
+  listerTousLesAvis(userId: string): Promise<MonAvis[]>
 
   // --- Templates -------------------------------------------------------
   listerTemplates(): Promise<Template[]>

@@ -26,7 +26,7 @@ import { createServerClient } from '@supabase/ssr'
  * cette adresse sans session. Il ne peut pas se connecter — la signature HMAC
  * remplace la session.
  */
-const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages', '/kit-marque', '/abonnement']
+const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages', '/kit-marque', '/abonnement', '/moderation']
 
 export async function proxy(request: NextRequest) {
   let reponse = NextResponse.next({ request })

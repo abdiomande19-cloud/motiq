@@ -43,6 +43,11 @@ export interface Profil {
   quotaRestant: number
   /** Mois auquel se rattache le quota (AAAA-MM-01). Sert a le renouveler. */
   quotaMois: string
+  /**
+   * Peut masquer un avis abusif. Faux par defaut : on ne devient pas
+   * moderateur par accident, et le role se donne en base, pas dans le code.
+   */
+  estModerateur: boolean
   creeLe: string
   majLe: string
 }
@@ -176,4 +181,55 @@ export interface Usage {
   mois: string
   nombreRendus: number
   minutesGenerees: number
+}
+
+// ============================================================================
+// AVIS ET STATISTIQUES
+// ============================================================================
+
+/**
+ * Un avis publie.
+ *
+ * `auteur` est un nom ABREGE (« Awa D. »), jamais le nom complet ni l'email :
+ * un avis public humanise la page, il n'expose pas les gens.
+ */
+export interface Avis {
+  id: string
+  /** Note de 1 a 5. */
+  note: number
+  commentaire: string
+  /** Nom abrege de l'auteur, tel qu'il doit etre affiche. */
+  auteur: string
+  creeLe: string
+  /** Vrai si l'avis appartient a la personne qui regarde la liste. */
+  estAMoi: boolean
+}
+
+/** Mon propre avis, meme masque par un moderateur. */
+export interface MonAvis {
+  id: string
+  note: number
+  commentaire: string
+  statut: 'en_attente' | 'publie' | 'masque'
+  motifMasquage: string | null
+  creeLe: string
+  majLe: string
+}
+
+/**
+ * Les compteurs de la page publique.
+ *
+ * TOUS sont lus dans la base. Aucun n'est estime, arrondi « pour faire joli »
+ * ou gonfle : une page qui annonce 12 000 utilisateurs quand il y en a 2
+ * detruit la confiance le jour ou quelqu'un verifie.
+ *
+ * `noteMoyenne` vaut null tant qu'aucun avis n'existe — et c'est a
+ * l'affichage de decider quoi montrer, jamais a la base d'inventer.
+ */
+export interface Statistiques {
+  utilisateurs: number
+  projets: number
+  avis: number
+  noteMoyenne: number | null
+  clientsSatisfaits: number
 }

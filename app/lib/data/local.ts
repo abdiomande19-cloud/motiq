@@ -20,17 +20,32 @@ import type { DepotMotiq, FiltresProjets, NouveauProjet, NouveauRendu } from './
 import type {
   Abonnement,
   Asset,
+  Avis,
   KitMarque,
+  MonAvis,
   Plan,
   Profil,
   Projet,
   Rendu,
+  Statistiques,
   Template,
   Usage,
 } from './types'
 import { quotaDuPlan } from '../tarifs'
 
 const FICHIER = join(process.cwd(), '.donnees', 'motiq.json')
+
+/** Avis, tel qu'il est conserve dans le fichier local. */
+interface AvisLocal {
+  id: string
+  userId: string
+  note: number
+  commentaire: string
+  statut: 'en_attente' | 'publie' | 'masque'
+  motifMasquage: string | null
+  creeLe: string
+  majLe: string
+}
 
 /** Contenu du fichier de donnees. */
 interface Base {
@@ -42,6 +57,7 @@ interface Base {
   rendus: Rendu[]
   abonnements: Abonnement[]
   usages: Usage[]
+  avis: AvisLocal[]
 }
 
 const BASE_VIDE: Base = {
@@ -53,10 +69,22 @@ const BASE_VIDE: Base = {
   rendus: [],
   abonnements: [],
   usages: [],
+  avis: [],
 }
 
 /** Horodatage ISO courant. */
 const maintenant = () => new Date().toISOString()
+
+/** Convertit un avis local en objet du domaine. */
+const versMonAvisLocal = (a: AvisLocal): MonAvis => ({
+  id: a.id,
+  note: a.note,
+  commentaire: a.commentaire,
+  statut: a.statut,
+  motifMasquage: a.motifMasquage,
+  creeLe: a.creeLe,
+  majLe: a.majLe,
+})
 
 /** Identifiant court et lisible, prefixe par type (ex. : prj_3f9a2c). */
 const id = (prefixe: string) => `${prefixe}_${randomUUID().slice(0, 8)}`
@@ -498,6 +526,129 @@ export class DepotLocal implements DepotMotiq {
     }
 
     await ecrire(base)
+  }
+
+  // ------------------------------------------------------ avis et stats
+  async statistiquesPubliques(): Promise<Statistiques> {
+    const base = await lire()
+    const publies = base.avis.filter((a) => a.statut === 'publie')
+    const notes = publies.map((a) => a.note)
+    return {
+      utilisateurs: base.profils.length,
+      projets: base.projets.length,
+      avis: publies.length,
+      noteMoyenne: notes.length
+        ? Math.round((notes.reduce((s, n) => s + n, 0) / notes.length) * 10) / 10
+        : null,
+      clientsSatisfaits: publies.filter((a) => a.note >= 4).length,
+    }
+  }
+
+  async listerAvis(limite = 50): Promise<Avis[]> {
+    const base = await lire()
+    return base.avis
+      .filter((a) => a.statut === 'publie')
+      .sort((a, b) => (a.creeLe < b.creeLe ? 1 : -1))
+      .slice(0, Math.min(Math.max(1, limite), 200))
+      .map((a) => ({
+        id: a.id,
+        note: a.note,
+        commentaire: a.commentaire,
+        auteur: this.auteurAbrege(base, a.userId),
+        creeLe: a.creeLe,
+        estAMoi: false,
+      }))
+  }
+
+  async monAvis(userId: string): Promise<MonAvis | null> {
+    const base = await lire()
+    const a = base.avis.find((x) => x.userId === userId)
+    return a ? versMonAvisLocal(a) : null
+  }
+
+  async enregistrerAvis(params: {
+    userId: string
+    note: number
+    commentaire: string
+  }): Promise<MonAvis> {
+    const base = await lire()
+    if (base.avis.some((a) => a.userId === params.userId)) {
+      throw new Error('Motiq : tu as déjà publié un avis. Modifie-le au lieu d’en écrire un second.')
+    }
+    const avis: AvisLocal = {
+      id: id('avi'),
+      userId: params.userId,
+      note: params.note,
+      commentaire: params.commentaire,
+      statut: 'publie',
+      motifMasquage: null,
+      creeLe: maintenant(),
+      majLe: maintenant(),
+    }
+    base.avis.push(avis)
+    await ecrire(base)
+    return versMonAvisLocal(avis)
+  }
+
+  async modifierAvis(params: {
+    userId: string
+    avisId: string
+    note: number
+    commentaire: string
+  }): Promise<boolean> {
+    const base = await lire()
+    const avis = base.avis.find((a) => a.id === params.avisId && a.userId === params.userId)
+    if (!avis) return false
+    avis.note = params.note
+    avis.commentaire = params.commentaire
+    avis.statut = 'publie'
+    avis.motifMasquage = null
+    avis.majLe = maintenant()
+    await ecrire(base)
+    return true
+  }
+
+  async supprimerAvis(userId: string, avisId: string): Promise<boolean> {
+    const base = await lire()
+    const avant = base.avis.length
+    base.avis = base.avis.filter((a) => !(a.id === avisId && a.userId === userId))
+    if (base.avis.length === avant) return false
+    await ecrire(base)
+    return true
+  }
+
+  async modererAvis(params: {
+    avisId: string
+    statut: 'publie' | 'masque'
+    motif: string | null
+  }): Promise<boolean> {
+    const base = await lire()
+    const avis = base.avis.find((a) => a.id === params.avisId)
+    if (!avis) return false
+    avis.statut = params.statut
+    avis.motifMasquage = params.statut === 'masque' ? params.motif : null
+    avis.majLe = maintenant()
+    await ecrire(base)
+    return true
+  }
+
+  async listerTousLesAvis(userId: string): Promise<MonAvis[]> {
+    const base = await lire()
+    const profil = base.profils.find((p) => p.id === userId)
+    if (!profil?.estModerateur) return []
+    return base.avis
+      .slice()
+      .sort((a, b) => (a.creeLe < b.creeLe ? 1 : -1))
+      .map(versMonAvisLocal)
+  }
+
+  /** Nom abrege : prenom + initiale. Jamais le nom complet ni l'email. */
+  private auteurAbrege(base: Base, userId: string): string {
+    const profil = base.profils.find((p) => p.id === userId)
+    const nom = (profil?.nom ?? '').trim()
+    if (!nom) return 'Utilisateur Motiq'
+    const morceaux = nom.split(/\s+/)
+    return morceaux.length > 1 ? `${morceaux[0]} ${morceaux[1][0]}.` : morceaux[0]
   }
 
   async obtenirUsage(userId: string, mois: string): Promise<Usage | null> {

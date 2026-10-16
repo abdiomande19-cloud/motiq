@@ -52,6 +52,9 @@ export default async function PageReglages() {
         plan: 'gratuit',
         quotaRestant: quotaDuPlan('gratuit'),
         quotaMois: `${new Date().toISOString().slice(0, 7)}-01`,
+        // Jamais moderateur par defaut : ce role se donne en base, sur une
+        // decision explicite, pas en s'inscrivant.
+        estModerateur: false,
       })
       profilRecree = true
     } catch {

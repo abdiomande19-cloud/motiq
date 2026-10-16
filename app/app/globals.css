@@ -937,4 +937,173 @@ h3 {
   .apercu-progression {
     transition: none;
   }
+
+  /* Les nombres apparaissent directement, sans defilement. */
+  .chiffre-valeur {
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   CHIFFRES PUBLICS
+   ========================================================================= */
+
+.bloc-chiffres {
+  margin: 0 0 var(--espace-4, 32px);
+}
+
+.chiffres-grille {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.chiffre {
+  border-radius: var(--rayon);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  padding: 22px 18px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.chiffre-valeur {
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+  /* Chiffres de largeur fixe : sans cela, le nombre tressaute pendant
+     l'animation, chaque chiffre n'ayant pas la meme largeur. */
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.chiffre-vide {
+  opacity: 0.35;
+}
+
+.chiffre-unite {
+  font-size: 0.45em;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
+.chiffre-libelle {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--texte-faible);
+  line-height: 1.35;
+}
+
+.chiffres-source {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--texte-faible);
+  line-height: 1.5;
+}
+
+/* ============================================================================
+   AVIS
+   ========================================================================= */
+
+.section-avis {
+  margin-top: 8px;
+}
+
+.avis-liste {
+  display: grid;
+  gap: 12px;
+  margin-bottom: var(--espace-4, 28px);
+}
+
+.avis {
+  border-radius: var(--rayon);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 18px;
+}
+
+.avis-entete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.avis-texte {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.etoiles {
+  white-space: nowrap;
+}
+
+/* Choix de la note : cinq etoiles cliquables. */
+.choix-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.etoile-bouton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 30px;
+  line-height: 1;
+  padding: 0 2px;
+  transition: transform 0.12s ease;
+}
+
+.etoile-bouton:hover {
+  transform: scale(1.15);
+}
+
+/* Pot de miel : hors de l'ecran pour un humain, present pour un robot.
+   « display:none » ne suffit pas : certains robots ignorent les champs caches
+   par cette regle. On le sort donc du cadre, ce qui le rend invisible sans le
+   rendre detectable. */
+.pot-de-miel {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.formulaire-avis textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ============================================================================
+   ADAPTATION AUX PETITS ECRANS
+   ========================================================================= */
+
+@media (max-width: 720px) {
+  .chiffres-grille {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chiffre {
+    padding: 16px 12px;
+  }
+
+  .chiffre-valeur {
+    font-size: 30px;
+  }
+
+  .avis-entete {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .chiffres-grille {
+    grid-template-columns: 1fr;
+  }
 }
