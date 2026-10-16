@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title MOTIQ - Remplir les cles Supabase
+title MOTIQ - Remplir les cles (Supabase et Paystack)
 color 0E
 
 REM Node n'est pas dans le PATH de Windows : on utilise le chemin complet.
