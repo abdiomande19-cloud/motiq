@@ -136,6 +136,7 @@ explique **pourquoi** la migration existe, pas seulement ce qu'elle fait.
 | `0004` | colonne `apparence` (couleurs, police, musique) |
 | `0005` | **empêche un utilisateur de s'offrir un plan payant** |
 | `0006` | décompte du quota, réservé au serveur |
+| `0007` | **le quota se renouvelle chaque mois** (sinon le plan gratuit se bloquait à vie) |
 
 Application d'une migration : `python outils/api-supabase.py sql <ref> <fichier.sql>`
 
