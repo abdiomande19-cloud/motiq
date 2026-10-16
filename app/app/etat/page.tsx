@@ -71,9 +71,9 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
   {
     num: 8,
     titre: 'Abonnements',
-    etat: 'bloque',
+    etat: 'en_cours',
     detail:
-      "Tarifs fixés par le donneur d'ordre : 4 900 F CFA/mois (Pro) et 9 900 F CFA/mois (Business). Quotas validés : 3 rendus/mois en gratuit, 10 en Pro, 40 en Business — le renouvellement lit le plan avant de renouveler. Prix et quotas viennent d'une source unique (lib/tarifs.ts) et sont vérifiés par outils/prouver-quotas-plans.py. Attend encore : les clés Stripe (secrète, publique, webhook) pour encaisser. La base est prête (table subscriptions, quotas protégés côté serveur).",
+      "Paystack branché et vérifié en mode test : page d'abonnement, redirection vers le paiement, retour contrôlé (statut, devise, montant exact, propriétaire) et webhook de secours. Les 2 plans existent sur le compte (4 900 et 9 900 Fr CFA/mois) et l'activation est PROUVÉE de bout en bout — 10 contrôles, dont le refus d'un montant 100 fois trop petit. RESTE À FAIRE POUR ENCAISSER VRAIMENT : activer le compte Paystack (pièce d'identité, RIB, justificatif de domicile) puis remplacer les clés de test par les clés de production. Aucun code à écrire pour cela.",
   },
   {
     num: 9,

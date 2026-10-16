@@ -231,6 +231,72 @@ pas passer grâce à une protection qui n'existerait que dans le code applicatif
 
 ---
 
+## Paiement — Paystack
+
+**Pourquoi Paystack et pas Stripe.** En Côte d'Ivoire, Stripe n'a pas de compte direct : sa page
+`stripe.com/global` y renvoie vers **Paystack**, qui est une société Stripe. Paystack encaisse en
+**francs CFA** et accepte le **Mobile Money** (Orange Money, MTN Momo, Wave) — ce que Stripe
+classique ne fait pas, alors que c'est ainsi que paient les clients ivoiriens.
+
+| | |
+|---|---|
+| Frais carte locale | 3,2 % |
+| Frais Mobile Money | **1,95 %** |
+| Règlement | XOF, sur compte bancaire, J+1 |
+
+### Deux pièges vérifiés, tous deux coûteux
+
+**1. Le facteur 100 du XOF.** La documentation officielle est explicite :
+
+> *« While there is no subunit for XOF, developers must multiply the amount by 100 regardless. »*
+
+Le franc CFA n'a **pas** de centimes, et Paystack exige **quand même** la multiplication. Envoyer
+`4900` ferait payer **49 Fr CFA** au lieu de 4 900. La multiplication est isolée dans
+`montantPaystack()` — un seul endroit où se tromper.
+
+**2. Un index unique partiel casse `ON CONFLICT`.** L'index sur `reference` était partiel
+(`WHERE reference IS NOT NULL`), ce que PostgreSQL **refuse d'utiliser** pour inférer un
+`ON CONFLICT` : l'activation d'abonnement était **impossible**, le paiement passait et le plan ne
+changeait jamais. Trouvé en testant le circuit, pas en relisant le SQL.
+
+### Le circuit
+
+```
+/abonnement            choisir un plan
+   ↓  redirection
+Paystack               page de paiement (carte ou Mobile Money)
+   ↓  retour
+/abonnement/retour     4 contrôles, puis activation
+/api/paystack/webhook  filet de sécurité si le client ne revient pas
+```
+
+**Le navigateur n'est jamais cru.** Ni le montant (recalculé depuis `lib/tarifs.ts`), ni le
+résultat : le serveur **redemande la transaction à Paystack** et vérifie quatre points — statut
+`success`, devise `XOF`, **montant exact**, et propriétaire du paiement. L'adresse de retour peut
+être ouverte à la main : elle ne suffit pas.
+
+**Le webhook ne remplace pas la page de retour, il la double.** Si le client ferme son navigateur
+après avoir payé, le webhook active quand même. La fonction SQL fait un `ON CONFLICT` sur la
+référence : recevoir les deux ne crée pas deux abonnements.
+
+**Limite connue :** Paystack doit pouvoir appeler une adresse **publique**. Le webhook n'est donc
+pas joignable depuis `localhost` — le circuit est vérifié par la page de retour en développement,
+et le webhook prend le relais une fois l'application déployée.
+
+### Vérification
+
+```bash
+python outils/prouver-paiement.py
+```
+
+**10 contrôles**, dont : signature absente → 401, signature fausse → 401, **montant 100 fois trop
+petit → refusé**, paiement correct → plan changé et **quota remis à niveau immédiatement**, même
+événement renvoyé → **pas de doublon**.
+
+> ⚠️ Ce contrôle a besoin que l'application tourne (`outils/2-demarrer-motiq.bat`).
+
+---
+
 ## Notes de développement
 
 - **Next.js 16** : `params` et `searchParams` sont des `Promise` (`await params`) ; l'ancien

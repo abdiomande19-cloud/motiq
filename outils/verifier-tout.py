@@ -34,6 +34,7 @@ CONTROLES: list[tuple[str, str, list[str]]] = [
     ("Quota : decompte reserve au serveur", "prouver-quota.py", []),
     ("Quota : renouvellement mensuel", "prouver-renouvellement-quota.py", []),
     ("Quota : chaque plan a sa dotation", "prouver-quotas-plans.py", []),
+    ("Paiement : signature, montant, activation", "prouver-paiement.py", []),
 ]
 
 
@@ -99,6 +100,10 @@ def main() -> int:
         return 1
 
     print("\n Toutes les protections annoncees dans le README sont verifiees.")
+    print()
+    print(" ATTENTION : le controle « Paiement » a besoin que l'application tourne.")
+    print(" S'il echoue sur des erreurs de connexion, lance d'abord :")
+    print("     outils/2-demarrer-motiq.bat")
     print()
     print(" Ces controles CREENT des comptes de test (@exemple.invalid) et leurs")
     print(" fichiers. Pour les retirer une fois la verification faite :")

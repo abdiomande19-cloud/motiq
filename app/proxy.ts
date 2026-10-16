@@ -14,8 +14,19 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-/** Pages qui exigent une session. */
-const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages', '/kit-marque']
+/**
+ * Pages qui exigent une session.
+ *
+ * ATTENTION : c'est une LISTE BLANCHE. Une page privee oubliee ici n'est PAS
+ * protegee par le proxy. Chaque page privee garde donc son propre controle
+ * (`if (!session) redirect(...)`) — le proxy est un filtre rapide, pas la
+ * seule serrure.
+ *
+ * /api/paystack/webhook n'y figure pas, et c'est volontaire : Paystack appelle
+ * cette adresse sans session. Il ne peut pas se connecter — la signature HMAC
+ * remplace la session.
+ */
+const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages', '/kit-marque', '/abonnement']
 
 export async function proxy(request: NextRequest) {
   let reponse = NextResponse.next({ request })

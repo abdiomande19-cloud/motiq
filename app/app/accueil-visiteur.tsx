@@ -179,7 +179,7 @@ export default async function AccueilVisiteur() {
               ))}
             </ul>
             <Link
-              href="/connexion"
+              href="/abonnement"
               className={plan.misEnAvant ? 'bouton-principal large' : 'bouton-secondaire large'}
             >
               {plan.action}
@@ -189,10 +189,11 @@ export default async function AccueilVisiteur() {
       </div>
 
       <div className="note">
-        <strong>Pourquoi « à définir » et pas un prix :</strong> les tarifs de la maquette validée
-        sont des emplacements. Fixer un prix demande de connaître le coût réel d&apos;un rendu et des
-        appels d&apos;IA — et le paiement n&apos;est pas encore branché. Je préfère te laisser un
-        emplacement vide qu&apos;un chiffre inventé.
+        <strong>Comment on s&apos;abonne :</strong> le bouton mène à la page d&apos;abonnement, puis
+        au paiement Paystack. Motiq encaisse en <strong>francs CFA</strong>, par carte ou par{' '}
+        <strong>Mobile Money</strong> (Orange Money, MTN Momo, Wave). Le plan ne change qu&apos;
+        <em>après vérification du paiement auprès de Paystack</em> — jamais sur la foi de la page de
+        retour, dont l&apos;adresse peut être modifiée à la main.
       </div>
 
       <div className="section-titre">
