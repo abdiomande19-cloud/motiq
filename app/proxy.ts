@@ -15,7 +15,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 /** Pages qui exigent une session. */
-const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages']
+const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages', '/kit-marque']
 
 export async function proxy(request: NextRequest) {
   let reponse = NextResponse.next({ request })

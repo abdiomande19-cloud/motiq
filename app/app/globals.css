@@ -473,3 +473,119 @@ code {
   display: inline-block;
   min-width: 90px;
 }
+
+/* ---------------------------------------------- kit de marque */
+
+.kit-logo {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin: 14px 0 8px;
+}
+
+.kit-logo-apercu {
+  width: 180px;
+  height: 180px;
+  border: 1px dashed var(--bord);
+  border-radius: var(--rayon);
+  background: var(--fond-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.kit-logo-apercu img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.kit-logo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 260px;
+}
+
+.kit-logo-actions .formulaire {
+  gap: 10px;
+}
+
+.kit-couleurs {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.kit-couleurs label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.kit-couleurs input[type='color'] {
+  width: 68px;
+  height: 44px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.kit-case {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px !important;
+}
+
+.kit-case input {
+  width: auto !important;
+}
+
+.kit-apercu {
+  border-radius: var(--rayon);
+  padding: 34px 28px;
+  margin: 8px 0 18px;
+}
+
+.kit-apercu-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.kit-apercu-logo {
+  max-height: 56px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.kit-apercu-titre {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.kit-apercu-texte {
+  font-size: 1rem;
+  max-width: 38ch;
+}
+
+.kit-pastilles {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.kit-pastille {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  vertical-align: middle;
+}

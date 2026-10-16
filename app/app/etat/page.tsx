@@ -41,10 +41,10 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
   },
   {
     num: 5,
-    titre: 'Application installable (PWA)',
+    titre: 'Installation et kit de marque',
     etat: 'fait',
     detail:
-      'Manifeste complet, icônes 192 et 512 px (dont une version maskable pour Android), service worker et bouton « Installer l\u2019application ». Le service worker ne met JAMAIS en cache les pages privées (/projets, /connexion) : après une déconnexion, l\u2019utilisateur suivant ne peut pas voir la page de quelqu\u2019un d\u2019autre. Vérifié en mode production : Chrome a émis l\u2019invitation d\u2019installation.',
+      'Application installable (manifeste, icônes 192/512 px dont maskable, service worker, bouton d\u2019installation). Kit de marque : logo, 2 ou 3 couleurs, police, avec aperçu réel. Le stockage est privé : le logo se lit par un lien signé d\u2019une heure. Vérifié : un autre compte ne peut ni déposer ni lire dans ton dossier, même en connaissant le nom du fichier.',
   },
   {
     num: 6,
