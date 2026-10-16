@@ -195,11 +195,33 @@ async function deposer(demande, resultat) {
 async function traiter(demande) {
   console.log(`\n--- demande ${demande.id.slice(0, 8)}...`)
 
-  await api(`/rest/v1/render_jobs?id=eq.${demande.id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ statut: 'en_cours', progression: 5, maj_le: new Date().toISOString() }),
-    headers: { Prefer: 'return=minimal' },
-  })
+  /**
+   * PRISE DE LA DEMANDE, ET CETTE FOIS DE FACON ATOMIQUE.
+   *
+   * Le filtre `statut=eq.en_attente` fait partie de la MISE A JOUR, pas de la
+   * lecture. C'est la difference essentielle : si deux workers tournent en
+   * meme temps — deux fenetres ouvertes, ou une tache planifiee qui demarre
+   * alors que la precedente n'est pas finie — un seul obtient la ligne.
+   *
+   * Sans ce filtre, les deux liraient « en attente », les deux se mettraient
+   * au travail, et la meme video serait fabriquee DEUX FOIS : deux minutes de
+   * processeur gaspillees, et deux fichiers identiques.
+   *
+   * La reponse vide est la preuve que quelqu'un d'autre est passe avant.
+   */
+  const { corps: pris } = await api(
+    `/rest/v1/render_jobs?id=eq.${demande.id}&statut=eq.en_attente`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ statut: 'en_cours', progression: 5, maj_le: new Date().toISOString() }),
+      headers: { Prefer: 'return=representation' },
+    },
+  )
+
+  if (!Array.isArray(pris) || pris.length === 0) {
+    console.log('  deja prise par un autre worker — on la laisse.')
+    return false
+  }
 
   try {
     const resultat = await rendre(demande)
@@ -267,16 +289,73 @@ async function tour() {
 }
 
 // ------------------------------------------------------------------ demarrage
+/**
+ * LE WORKER ECRIT SON PROPRE JOURNAL.
+ *
+ * On ne passe pas par une redirection du shell (« > worker.log ») : Windows
+ * verrouille alors le fichier, et deux lancements se disputent l'acces — ce qui
+ * arrive des qu'une execution precedente traine. Le journal est donc ecrit
+ * directement par le programme, en ajout, et chaque ligne porte l'heure.
+ *
+ * C'est aussi ce qui permet a une tache planifiee de lancer le worker SANS
+ * fenetre : sans redirection, aucun terminal n'est necessaire.
+ */
+const JOURNAL = path.join(ICI, 'worker.log')
+const TAILLE_MAX_JOURNAL = 2_000_000 // 2 Mo
+
+function ecrireJournal(ligne) {
+  try {
+    // On taille le journal avant qu'il ne remplisse le disque : un fichier
+    // qui grossit a chaque rendu finirait par poser probleme des mois plus
+    // tard, sans que personne ne fasse le lien.
+    if (fs.existsSync(JOURNAL) && fs.statSync(JOURNAL).size > TAILLE_MAX_JOURNAL) {
+      fs.writeFileSync(JOURNAL, '')
+    }
+    fs.appendFileSync(JOURNAL, ligne + '\n')
+  } catch {
+    // Un journal illisible ne doit JAMAIS empecher un rendu.
+  }
+}
+
+for (const methode of ['log', 'error', 'warn']) {
+  const origine = console[methode].bind(console)
+  console[methode] = (...args) => {
+    origine(...args)
+    ecrireJournal(`[${new Date().toISOString()}] ${args.map(String).join(' ')}`)
+  }
+}
+
 console.log('='.repeat(70))
 console.log(' MOTIQ — WORKER DE RENDU')
 console.log('='.repeat(70))
 console.log(`  base : ${URL}`)
 
-const faits = await tour()
+/**
+ * UNE VEILLE NE DOIT JAMAIS MOURIR SUR UNE ERREUR PASSAGERE.
+ *
+ * Sans ces deux garde-fous, une coupure reseau d'une seconde — ou une seule
+ * demande dont les donnees sont abimees — arrete le worker. La file continue
+ * alors de se remplir, et personne ne s'en apercoit avant qu'un client se
+ * plaigne : sa video reste « en attente » indefiniment.
+ *
+ * Une erreur est donc SIGNALEE, mais elle n'arrete rien.
+ */
+process.on('unhandledRejection', (raison) => {
+  console.error('[rejet non traite]', raison)
+})
+process.on('uncaughtException', (erreur) => {
+  console.error('[exception non traitee]', erreur?.message ?? erreur)
+})
+
+const faits = await tour().catch((e) => {
+  console.error('[erreur] tour initial :', e.message)
+  return 0
+})
 console.log(`\n  ${faits} video(s) fabriquee(s).`)
 
 if (BOUCLE) {
   console.log('\n  Surveillance continue : nouvelle tentative toutes les 15 s.')
+  console.log('  Laisse cette fenetre ouverte. Ctrl+C pour arreter.')
   setInterval(() => {
     tour().catch((e) => console.error('  [erreur]', e.message))
   }, 15000)
