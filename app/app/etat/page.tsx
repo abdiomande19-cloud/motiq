@@ -73,7 +73,7 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
     titre: 'Abonnements',
     etat: 'bloque',
     detail:
-      "Tarifs fixés par le donneur d'ordre : 4 900 F CFA/mois (Pro) et 9 900 F CFA/mois (Business). Ils sont affichés par l'accueil et par les maquettes depuis une source unique (lib/tarifs.ts) — plus aucun « à définir ». Attend encore : les clés Stripe (secrète, publique, webhook) pour encaisser, et les quotas de rendus par plan. La base est prête (table subscriptions, quotas protégés côté serveur).",
+      "Tarifs fixés par le donneur d'ordre : 4 900 F CFA/mois (Pro) et 9 900 F CFA/mois (Business). Quotas validés : 3 rendus/mois en gratuit, 10 en Pro, 40 en Business — le renouvellement lit le plan avant de renouveler. Prix et quotas viennent d'une source unique (lib/tarifs.ts) et sont vérifiés par outils/prouver-quotas-plans.py. Attend encore : les clés Stripe (secrète, publique, webhook) pour encaisser. La base est prête (table subscriptions, quotas protégés côté serveur).",
   },
   {
     num: 9,

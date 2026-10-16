@@ -32,15 +32,22 @@ export interface Tarif {
    * `null` = pas encore fixe. On ne met PAS de chiffre inventé : la maquette
    * annonce « quotas provisoires — à valider », et un quota trop genereux
    * engage un coût reel (chaque rendu consomme des appels payants).
+   *
+   * Pro a 10 et Business 40 : decision du donneur d'ordre, prise sur la marge
+   * restante. A 0,30 EUR le rendu, 20 rendus Pro ne laissaient que 1,47 EUR de
+   * marge sur 7,47 EUR, et 30 rendus passaient en perte.
    */
-  quotaMensuel: number | null
+  quotaMensuel: number
 }
 
 export const TARIFS: Record<Plan, Tarif> = {
   gratuit: { plan: 'gratuit', nom: 'Gratuit', prix: 0, quotaMensuel: 3 },
-  pro: { plan: 'pro', nom: 'Pro', prix: 4900, quotaMensuel: null },
-  business: { plan: 'business', nom: 'Business', prix: 9900, quotaMensuel: null },
+  pro: { plan: 'pro', nom: 'Pro', prix: 4900, quotaMensuel: 10 },
+  business: { plan: 'business', nom: 'Business', prix: 9900, quotaMensuel: 40 },
 }
+
+/** Nombre de rendus par mois pour un plan donne. Jamais zero par accident. */
+export const quotaDuPlan = (plan: Plan): number => TARIFS[plan].quotaMensuel
 
 /**
  * 4900 -> « 4 900 F CFA »

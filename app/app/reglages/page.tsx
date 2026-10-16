@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { creerClientServeur } from '@/lib/supabase/server'
 import { obtenirDepotPourJeton, type Profil } from '@/lib/data'
+import { formaterPrix, PERIODE, quotaDuPlan, TARIFS } from '@/lib/tarifs'
 import { seDeconnecter } from '../connexion/actions'
 import FormulaireNom from './formulaire'
 
@@ -12,11 +13,13 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-const LIBELLE_PLAN: Record<string, string> = {
-  gratuit: 'Gratuit',
-  pro: 'Pro',
-  business: 'Business',
-}
+/**
+ * Libelle du plan : il vient de lib/tarifs.ts, comme le prix et le quota.
+ * Une table ecrite ici finirait par dire « Pro » quand les tarifs diraient
+ * autre chose.
+ */
+const libellePlan = (plan: string): string =>
+  plan in TARIFS ? TARIFS[plan as keyof typeof TARIFS].nom : plan
 
 export default async function PageReglages() {
   const supabase = await creerClientServeur()
@@ -47,7 +50,7 @@ export default async function PageReglages() {
         email: utilisateur.email ?? '',
         nom: (utilisateur.user_metadata?.nom as string) || (utilisateur.email ?? '').split('@')[0],
         plan: 'gratuit',
-        quotaRestant: 3,
+        quotaRestant: quotaDuPlan('gratuit'),
         quotaMois: `${new Date().toISOString().slice(0, 7)}-01`,
       })
       profilRecree = true
@@ -107,15 +110,17 @@ export default async function PageReglages() {
           <tr>
             <td>Plan</td>
             <td>
-              <strong>{LIBELLE_PLAN[profil?.plan ?? 'gratuit'] ?? profil?.plan}</strong>{' '}
+              <strong>{libellePlan(profil?.plan ?? 'gratuit')}</strong>{' '}
               <span className="carte-detail">
-                (les plans Pro et Business attendent le paiement)
+                {profil
+                  ? `${formaterPrix(TARIFS[profil.plan].prix)}${PERIODE} — ${quotaDuPlan(profil.plan)} rendus par mois`
+                  : ''}
               </span>
             </td>
           </tr>
           <tr>
             <td>Rendus restants ce mois-ci</td>
-            <td>{profil ? profil.quotaRestant : '—'}</td>
+            <td>{profil ? `${profil.quotaRestant} sur ${quotaDuPlan(profil.plan)}` : '—'}</td>
           </tr>
           <tr>
             <td>Consommation ({mois})</td>

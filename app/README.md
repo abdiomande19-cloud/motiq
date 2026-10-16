@@ -71,18 +71,23 @@ maquettes les lisent, ils ne les recopient pas.
 | Plan | Prix | Rendus / mois |
 |---|---|---|
 | Gratuit | 0 F CFA | 3 |
-| Pro | **4 900 F CFA** / mois | à fixer |
-| Business | **9 900 F CFA** / mois | à fixer |
+| Pro | **4 900 F CFA** / mois | **10** |
+| Business | **9 900 F CFA** / mois | **40** |
 
-Montants **fixés par le donneur d'ordre** — ils ne sont pas déduits ni estimés. La maquette de
-phase 1 les annonçait « à définir » ; c'est remplacé.
+Montants et quotas **fixés par le donneur d'ordre** — ils ne sont pas déduits ni estimés. La
+maquette de phase 1 les annonçait « à définir » ; c'est remplacé.
 
-Deux points restent ouverts, volontairement :
+**Pourquoi ces quotas et pas davantage.** À 0,30 € le rendu, 20 rendus Pro ne laissaient que
+1,47 € de marge sur 7,47 €, et 30 rendus passaient en perte. Les 40 rendus Business laissent
+environ 11 € de marge au pire. Le calcul est dans `lib/tarifs.ts`.
 
-- **Les quotas par plan.** Seul le gratuit (3/mois) est posé. Un chiffre trop généreux engage un
-  coût réel : chaque rendu consomme des appels payants. À fixer avec le coût d'un rendu.
+Deux points techniques, volontairement :
+
 - **La devise est stockée en entier**, jamais en flottant : 4900 et non 49.00. Un prix qui passe
   par un flottant finit par produire des arrondis faux au moment de facturer.
+- **Le renouvellement lit le plan avant de renouveler.** L'ordre compte : renouveler d'abord au
+  niveau gratuit priverait un abonné Pro des 10 rendus qu'il paie, et il ne s'en apercevrait qu'en
+  tombant à zéro. Vérifié par `outils/prouver-quotas-plans.py`.
 
 ---
 

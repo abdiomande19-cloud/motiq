@@ -13,6 +13,7 @@ import { revalidatePath } from 'next/cache'
 import { creerClientServeur } from '@/lib/supabase/server'
 import { obtenirDepot, obtenirDepotPourJeton } from '@/lib/data'
 import { estPoliceValide } from '@/lib/polices'
+import { quotaDuPlan } from '@/lib/tarifs'
 import {
   deposerFichier,
   retirerFichier,
@@ -40,15 +41,6 @@ async function session() {
 const DUREE_MIN = 15
 const DUREE_MAX = 60
 const DUREE_SCENE_MAX = 30
-
-/**
- * Dotation mensuelle du plan gratuit.
- *
- * La maquette de phase 1 annonce des « quotas provisoires — a valider » : ce 3
- * est la valeur posee a l'inscription, pas un chiffre invente. Les dotations Pro
- * et Business seront fixees avec les abonnements.
- */
-const QUOTA_GRATUIT = 3
 
 /** Valide et normalise les scenes venues du navigateur. */
 function analyserScenes(brut: unknown): { scenes: Scene[]; erreur?: string } {
@@ -189,17 +181,25 @@ export async function lancerGeneration(
     if (!projet.templateId) return { erreur: "Choisis d'abord un template." }
 
     // Le quota appartient au SERVEUR : la migration 0005 interdit a
-    // l'utilisateur d'y toucher. On le renouvelle d'abord s'il date d'un mois
-    // precedent — sinon un compte gratuit resterait bloque pour toujours apres
-    // ses premiers rendus, alors que le cahier des charges promet « quelques
-    // videos par mois ».
+    // l'utilisateur d'y toucher.
+    //
+    // On lit d'abord le PLAN, puis on renouvelle avec la dotation de ce plan.
+    // L'ordre compte : renouveler d'abord au niveau gratuit priverait un abonne
+    // Pro des 10 rendus qu'il paie, et il ne s'en apercevrait qu'au moment ou
+    // son quota tomberait a zero.
     const depotServeur = obtenirDepot()
+    const profilAvant = await depot.obtenirProfil(s.user.id).catch(() => null)
+
+    if (!profilAvant) {
+      return { erreur: 'Ton profil est introuvable. Va sur la page Réglages.' }
+    }
+
     const profil = await depotServeur
-      .assurerQuotaDuMois(s.user.id, QUOTA_GRATUIT)
+      .assurerQuotaDuMois(s.user.id, quotaDuPlan(profilAvant.plan))
       .catch(() => null)
 
     if (!profil) {
-      return { erreur: 'Ton profil est introuvable. Va sur la page Réglages.' }
+      return { erreur: 'Le renouvellement de ton quota a échoué. Réessaie dans un instant.' }
     }
 
     // Le quota est verifie AVANT d'enregistrer quoi que ce soit : inutile de

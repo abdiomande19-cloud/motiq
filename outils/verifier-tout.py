@@ -33,6 +33,7 @@ CONTROLES: list[tuple[str, str, list[str]]] = [
     ("Protection du plan payant", "prouver-faille-plan.py", ["apres"]),
     ("Quota : decompte reserve au serveur", "prouver-quota.py", []),
     ("Quota : renouvellement mensuel", "prouver-renouvellement-quota.py", []),
+    ("Quota : chaque plan a sa dotation", "prouver-quotas-plans.py", []),
 ]
 
 
