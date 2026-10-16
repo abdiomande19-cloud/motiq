@@ -109,6 +109,20 @@ export interface DepotMotiq {
     codeClient: string | null
   }): Promise<void>
 
+  /**
+   * Resilit un abonnement et retombe au plan gratuit s'il ne reste rien
+   * d'actif.
+   *
+   * Prend le code client et l'email — PAS l'identifiant utilisateur : les
+   * evenements de resiliation de Paystack ne les transportent pas, et une
+   * fonction qui les exigerait serait inutilisable au moment ou elle sert.
+   */
+  desactiverAbonnement(params: {
+    codeClient: string | null
+    email: string | null
+    statut: string
+  }): Promise<void>
+
   // --- Projets ---------------------------------------------------------
   listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]>
   obtenirProjet(userId: string, projetId: string): Promise<Projet | null>

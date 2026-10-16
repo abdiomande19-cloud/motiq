@@ -37,8 +37,9 @@ type EvenementPaystack = {
     amount?: number
     currency?: string
     reference?: string
+    subscription_code?: string
     customer?: { email?: string; customer_code?: string }
-    plan?: { plan_code?: string } | null
+    plan?: { plan_code?: string } | string | null
     metadata?: Record<string, unknown>
   }
 }
@@ -61,6 +62,33 @@ export async function POST(requete: Request): Promise<NextResponse> {
 
   const type = evenement.event ?? ''
   const donnees = evenement.data ?? {}
+
+  // ------------------------------------------------ resiliation
+  // Sans ce traitement, un client qui resilie chez Paystack garderait le plan
+  // Pro et 10 rendus par mois POUR TOUJOURS, sans jamais etre paye. C'est une
+  // fuite de revenu silencieuse : rien ne casse, donc personne ne s'en apercoit.
+  //
+  // On ne traite QUE « disable » (l'abonnement est termine). « not_renew »
+  // signifie qu'il ne se renouvellera pas mais qu'il court encore : retrograder
+  // a ce moment-la couperait un client qui a paye.
+  if (type === 'subscription.disable') {
+    try {
+      await obtenirDepot().desactiverAbonnement({
+        codeClient: donnees.customer?.customer_code ?? null,
+        email: donnees.customer?.email ?? null,
+        statut: String(donnees.status ?? 'disabled'),
+      })
+    } catch (erreur) {
+      return NextResponse.json(
+        {
+          erreur: 'résiliation impossible',
+          detail: erreur instanceof Error ? erreur.message : 'erreur inconnue',
+        },
+        { status: 500 },
+      )
+    }
+    return NextResponse.json({ recu: true, resilie: true })
+  }
 
   // On repond 200 a tout ce qu'on ne traite pas : sinon Paystack reessaie
   // indefiniment un evenement qui ne nous interesse pas.
@@ -94,12 +122,17 @@ export async function POST(requete: Request): Promise<NextResponse> {
   }
 
   try {
+    // `plan` arrive tantot en texte, tantot en objet selon l'evenement.
+    const planBrut = donnees.plan
+    const codePlan =
+      typeof planBrut === 'string' ? planBrut : (planBrut?.plan_code ?? null)
+
     await obtenirDepot().activerAbonnement({
       userId: proprietaire,
       plan,
       reference,
       statut: String(donnees.status),
-      planCode: donnees.plan?.plan_code ?? null,
+      planCode: codePlan,
       codeClient: donnees.customer?.customer_code ?? null,
     })
   } catch (erreur) {

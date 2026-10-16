@@ -455,6 +455,51 @@ export class DepotLocal implements DepotMotiq {
     await ecrire(base)
   }
 
+  async desactiverAbonnement(params: {
+    codeClient: string | null
+    email: string | null
+    statut: string
+  }): Promise<void> {
+    const base = await lire()
+
+    // On retrouve l'abonnement par code client, sinon par l'email du compte :
+    // c'est ce que contiennent les evenements de resiliation.
+    const profil = base.profils.find((p) => p.email === params.email)
+    const abonnement = base.abonnements
+      .filter(
+        (a) =>
+          (params.codeClient && a.codeClient === params.codeClient) ||
+          (profil && a.userId === profil.id),
+      )
+      .sort((a, b) => (a.periodeDebut < b.periodeDebut ? 1 : -1))[0]
+
+    if (!abonnement) return
+
+    abonnement.statutPaiement = params.statut
+    abonnement.annuleLe = abonnement.annuleLe ?? maintenant()
+
+    // On ne retombe au gratuit que s'il ne reste AUCUN autre abonnement actif :
+    // resilier le Business ne doit pas faire perdre un Pro encore valide.
+    const resteActif = base.abonnements.some(
+      (a) =>
+        a.userId === abonnement.userId &&
+        a.annuleLe === null &&
+        ['success', 'active', 'non-renewing'].includes(a.statutPaiement ?? ''),
+    )
+
+    if (!resteActif) {
+      const compte = base.profils.find((p) => p.id === abonnement.userId)
+      if (compte) {
+        compte.plan = 'gratuit'
+        compte.quotaRestant = quotaDuPlan('gratuit')
+        compte.quotaMois = `${new Date().toISOString().slice(0, 7)}-01`
+        compte.majLe = maintenant()
+      }
+    }
+
+    await ecrire(base)
+  }
+
   async obtenirUsage(userId: string, mois: string): Promise<Usage | null> {
     const base = await lire()
     return base.usages.find((u) => u.userId === userId && u.mois === mois) ?? null

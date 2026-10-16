@@ -342,6 +342,19 @@ export class DepotSupabase implements DepotMotiq {
     verifier(error, 'activation de l abonnement')
   }
 
+  async desactiverAbonnement(params: {
+    codeClient: string | null
+    email: string | null
+    statut: string
+  }): Promise<void> {
+    const { error } = await this.client.rpc('desactiver_abonnement', {
+      p_code_client: params.codeClient,
+      p_email: params.email,
+      p_statut: params.statut,
+    })
+    verifier(error, 'resiliation de l abonnement')
+  }
+
   // ---------------------------------------------------------------- projets
   async listerProjets(userId: string, filtres: FiltresProjets = {}): Promise<Projet[]> {
     let requete = this.client

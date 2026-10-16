@@ -279,6 +279,26 @@ résultat : le serveur **redemande la transaction à Paystack** et vérifie quat
 après avoir payé, le webhook active quand même. La fonction SQL fait un `ON CONFLICT` sur la
 référence : recevoir les deux ne crée pas deux abonnements.
 
+### La résiliation — le trou qu'on ne voit pas
+
+Le webhook ne traitait d'abord que `charge.success`. **Si un client résiliait chez Paystack, Motiq
+n'en savait rien : il gardait le plan Pro et 10 rendus par mois pour toujours, sans jamais être
+payé.** Une fuite de revenu silencieuse — rien ne casse, donc personne ne s'en aperçoit.
+
+`subscription.disable` fait maintenant retomber le compte au plan gratuit.
+
+**Deux précautions dans ce traitement :**
+
+- **On ne traite que `disable`, pas `not_renew`.** `not_renew` signifie que l'abonnement ne se
+  renouvellera pas mais qu'il court encore : rétrograder à ce moment-là couperait un client qui a
+  payé.
+- **On ne rétrograde que s'il ne reste aucun autre abonnement actif.** Sinon, résilier le Business
+  ferait perdre un Pro encore valide.
+
+Et une chose **volontairement absente** : si l'événement ne correspond à aucun abonnement connu, on
+ne devine pas — **on ne fait rien**. Mieux vaut un abonnement à résoudre à la main qu'un compte
+dégradé par erreur.
+
 **Limite connue :** Paystack doit pouvoir appeler une adresse **publique**. Le webhook n'est donc
 pas joignable depuis `localhost` — le circuit est vérifié par la page de retour en développement,
 et le webhook prend le relais une fois l'application déployée.

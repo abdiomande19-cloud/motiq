@@ -79,6 +79,17 @@ def signer(corps: bytes) -> str:
     return hmac.new(PAYSTACK_SECRET.encode(), corps, hashlib.sha512).hexdigest()
 
 
+def code_client_de(user_id: str) -> str:
+    """Code client FACON PAYSTACK : unique par client.
+
+    Mon test donnait le MEME code client aux deux comptes, ce qui n'arrive
+    jamais en vrai. La resiliation est alors tombee sur le mauvais compte — et
+    j'ai d'abord cru a un bug du code, alors que c'etait ma donnee de test qui
+    ne ressemblait a rien de reel.
+    """
+    return f"CUS_{user_id.replace('-', '')[:14]}"
+
+
 def evenement(reference: str, user_id: str, plan: str, montant: int, devise="XOF", statut="success"):
     return {
         "event": "charge.success",
@@ -88,7 +99,10 @@ def evenement(reference: str, user_id: str, plan: str, montant: int, devise="XOF
             "currency": devise,
             "reference": reference,
             "metadata": {"user_id": user_id, "plan": plan},
-            "customer": {"email": "webhook@exemple.invalid", "customer_code": "CUS_test"},
+            "customer": {
+                "email": f"{user_id[:8]}@exemple.invalid",
+                "customer_code": code_client_de(user_id),
+            },
             "plan": {"plan_code": "PLN_test"},
         },
     }
@@ -202,6 +216,29 @@ if autre:
              f"plan={plan_autre}")
 else:
     verifier("aucun second compte de test disponible", False, "test 7 non execute")
+
+# ---------------------------------------------------- 8. resiliation
+print("\n8) le client RESILIE son abonnement (subscription.disable)")
+corps = json.dumps({
+    "event": "subscription.disable",
+    "data": {
+        "status": "disabled",
+        "subscription_code": "SUB_test",
+        # Le MEME code client que celui de l'activation du compte « moi ».
+        "customer": {"email": email, "customer_code": code_client_de(moi)},
+        "plan": "PLN_test",
+    },
+}).encode()
+code_w, reponse = poster_webhook(corps, signer(corps))
+print(f"     reponse du webhook : HTTP {code_w} — {str(reponse)[:160]}")
+code_l, profils = appel("GET", f"/rest/v1/profiles?select=plan,quota_restant&id=eq.{moi}", SECRETE)
+p = profils[0] if isinstance(profils, list) and profils else {}
+verifier("retour au plan gratuit", p.get("plan") == "gratuit", f"plan={p.get('plan')}")
+verifier("quota ramene a 3", p.get("quota_restant") == 3, f"quota={p.get('quota_restant')}")
+
+code_a, abos = appel("GET", f"/rest/v1/subscriptions?select=annule_le,statut_paiement&user_id=eq.{moi}", SECRETE)
+a = abos[0] if isinstance(abos, list) and abos else {}
+verifier("abonnement marque resilie", bool(a.get("annule_le")), f"annule_le={a.get('annule_le')}")
 
 # ---------------------------------------------------------------- nettoyage
 for identifiant in [x for x in (moi, autre) if x]:
