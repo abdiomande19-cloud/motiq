@@ -1,4 +1,14 @@
-import { AbsoluteFill, interpolate, Sequence, useCurrentFrame, useVideoConfig } from 'remotion'
+import { useEffect, useState } from 'react'
+import {
+  AbsoluteFill,
+  continueRender,
+  delayRender,
+  interpolate,
+  Sequence,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from 'remotion'
 import type { PlanVideo, Scene } from './types'
 
 /**
@@ -13,6 +23,57 @@ import type { PlanVideo, Scene } from './types'
  * un glissement, un zoom, un fondu. Le meme script rend donc huit videos
  * differentes.
  */
+
+/** Graisses reellement employees par les huit templates. */
+const GRAISSES = [500, 600, 700, 800, 900]
+
+/**
+ * Charge la police Inter, et EMPECHE le rendu de demarrer avant qu'elle soit
+ * prete.
+ *
+ * SANS CE BLOCAGE, le rendu commence immediatement, aucune police n'etant
+ * encore chargee : le navigateur retombe sur son serif par defaut et la video
+ * sort en Times New Roman. C'est exactement le defaut constate sur le premier
+ * rendu — la police demandee n'existait pas, et rien ne le signalait.
+ *
+ * LES FICHIERS SONT EMBARQUES dans le moteur (public/fonts), pas telecharges
+ * au moment du rendu : un rendu ne doit pas dependre du reseau, sinon une
+ * coupure produit une video differente des autres.
+ *
+ * Inter est sous licence SIL Open Font : usage commercial et redistribution
+ * libres.
+ */
+function usePoliceInter() {
+  const [ancre] = useState(() => delayRender('Chargement de la police Inter'))
+
+  useEffect(() => {
+    const chargees: FontFace[] = []
+
+    Promise.all(
+      GRAISSES.map(async (graisse) => {
+        const face = new FontFace(
+          'Inter',
+          `url(${staticFile(`fonts/inter-latin-${graisse}-normal.woff2`)})`,
+          { weight: String(graisse), style: 'normal' },
+        )
+        await face.load()
+        chargees.push(face)
+      }),
+    )
+      .then(() => {
+        // `document.fonts.add` vient APRES le chargement : ajoutee trop tot,
+        // la police reste vide et le navigateur continue de servir le repli.
+        for (const face of chargees) document.fonts.add(face)
+        continueRender(ancre)
+      })
+      .catch((erreur) => {
+        // On ne bloque JAMAIS indefiniment : une video avec une police de
+        // repli vaut mieux qu'un rendu qui n'arrive jamais. Mais on le dit.
+        console.error('[police] chargement impossible :', erreur)
+        continueRender(ancre)
+      })
+  }, [ancre])
+}
 
 interface Animation {
   /** Comment la scene entre. */
@@ -40,17 +101,50 @@ const ANIMATIONS: Record<string, Animation> = {
 
 const DEFAUT: Animation = ANIMATIONS.Punch
 
+/**
+ * Trouve le mouvement d'un template.
+ *
+ * LA COMPARAISON IGNORE LA CASSE, ET CE N'EST PAS UN DETAIL : la base stocke
+ * les identifiants en minuscules (« punch », « pulse ») tandis que le
+ * catalogue les nomme avec une majuscule (« Punch », « Pulse »). Une recherche
+ * stricte echouait donc pour les huit, et TOUS les templates rendaient la meme
+ * video — un defaut invisible, puisque le rendu restait correct en apparence.
+ */
+function animationDe(template: string | undefined): Animation {
+  if (!template) return DEFAUT
+  const cherche = template.trim().toLowerCase()
+  for (const [nom, animation] of Object.entries(ANIMATIONS)) {
+    if (nom.toLowerCase() === cherche) return animation
+  }
+  return DEFAUT
+}
+
 export const MotiqVideo: React.FC<PlanVideo> = ({ scenes, apparence, template, filigrane }) => {
   const accent = apparence.couleurs[0] ?? '#7C5CFF'
   const fond = apparence.couleurs[1] ?? '#0B0B12'
   const encre = apparence.couleurs[2] ?? '#FFFFFF'
+
+  // Une seule fois, pas a chaque scene : le mouvement ne depend pas de la
+  // scene mais du template choisi par le client.
+  const animation = animationDe(template)
+
+  // On ne dessine rien avant que la police soit prete.
+  usePoliceInter()
 
   // Le `from` de chaque scene est CUMULE : la scene 3 commence apres la 1 et
   // la 2. Les calculer independamment les ferait toutes demarrer ensemble.
   let curseur = 0
 
   return (
-    <AbsoluteFill style={{ backgroundColor: fond, fontFamily: apparence.police }}>
+    <AbsoluteFill
+      style={{
+        backgroundColor: fond,
+        // Repli sans serif explicite : si la police ne charge pas, on obtient
+        // une sans-serif du systeme, jamais un serif. Une video Motiq ne doit
+        // jamais ressembler a un document Word.
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      }}
+    >
       {/* Halo d'accent : donne de la profondeur sans image. */}
       <AbsoluteFill
         style={{
@@ -66,7 +160,7 @@ export const MotiqVideo: React.FC<PlanVideo> = ({ scenes, apparence, template, f
           <Sequence key={scene.ordre} from={depuis} durationInFrames={dureeImages}>
             <SceneDessinee
               scene={scene}
-              animation={ANIMATIONS[template] ?? DEFAUT}
+              animation={animation}
               accent={accent}
               encre={encre}
               dureeImages={dureeImages}

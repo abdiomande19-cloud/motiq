@@ -34,19 +34,39 @@ const EXEMPLE: PlanVideo = {
 }
 
 export const MotiqRoot: React.FC = () => {
-  // La duree totale est recalculee a partir des scenes, jamais fournie :
-  // un total incoherent produirait une video tronquee ou figee a la fin.
-  const dureeSecondes = EXEMPLE.scenes.reduce((somme, s) => somme + s.dureeSecondes, 0)
-
   return (
     <Composition
       id="Motiq"
       component={MotiqVideo}
-      durationInFrames={Math.round(dureeSecondes * IMAGES_PAR_SECONDE)}
+      // Valeur de repli : elle sera remplacee juste en dessous par la duree
+      // reelle du projet. On ne peut pas la calculer ici, car ce composant est
+      // evalue avant que les donnees du client soient connues.
+      durationInFrames={Math.round(
+        EXEMPLE.scenes.reduce((somme, s) => somme + s.dureeSecondes, 0) * IMAGES_PAR_SECONDE,
+      )}
       fps={IMAGES_PAR_SECONDE}
       width={LARGEUR}
       height={HAUTEUR}
       defaultProps={EXEMPLE}
+      /**
+       * LA DUREE SUIT LE PROJET, PAS UNE CONSTANTE.
+       *
+       * Sans ce calcul, la duree resterait figee sur celle de l'exemple (9 s) :
+       * un projet de 20 s sortirait TRONQUE a 9 s, et personne ne s'en
+       * apercevrait avant de visionner. C'est exactement le genre de defaut
+       * qu'on ne voit qu'apres avoir livre.
+       *
+       * Le total est recalcule a partir des scenes recues, jamais repris d'un
+       * champ « dureeTotale » : si les deux divergeaient, c'est la somme des
+       * scenes qui dit la verite, puisque ce sont elles qui sont dessinees.
+       */
+      calculateMetadata={({ props }) => {
+        const total = (props.scenes ?? []).reduce(
+          (somme, s) => somme + Number(s.dureeSecondes ?? 0),
+          0,
+        )
+        return { durationInFrames: Math.max(1, Math.round(total * IMAGES_PAR_SECONDE)) }
+      }}
     />
   )
 }
