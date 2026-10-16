@@ -76,6 +76,46 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
   const duree = script?.dureeTotaleSecondes ?? 0
   const pret = Boolean(script && projet.templateId)
 
+  // Guide « prochaine etape ».
+  //
+  // Constat d'usage reel : un projet cree restait a l'etat de brouillon, vide,
+  // parce que rien n'indiquait quoi faire ensuite. Ce bloc repond a la seule
+  // question qui compte a l'arrivee sur la page.
+  const etapes = [
+    {
+      fait: Boolean(script),
+      texte: 'Écris ton script, scène par scène',
+      ancre: '#etape-1',
+      requise: true,
+    },
+    {
+      fait: Boolean(projet.templateId),
+      texte: 'Choisis un template',
+      ancre: '#etape-2',
+      requise: true,
+    },
+    {
+      fait: Boolean(projet.apparence),
+      texte: 'Ajuste les couleurs, la police et la musique',
+      ancre: '#etape-3',
+      requise: false,
+    },
+    {
+      fait: images.length > 0,
+      texte: 'Ajoute tes images',
+      ancre: '#etape-4',
+      requise: projet.entreeSource === 'images',
+    },
+    {
+      fait: rendus.length > 0,
+      texte: 'Lance la génération',
+      ancre: '#etape-5',
+      requise: false,
+    },
+  ]
+  const suivante = etapes.find((e) => e.requise && !e.fait) ?? etapes.find((e) => !e.fait)
+  const faits = etapes.filter((e) => e.fait).length
+
   return (
     <>
       <p className="fil">
@@ -97,6 +137,23 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
           <strong>Ton idée de départ :</strong> {projet.idee}
         </div>
       )}
+
+      <div className={suivante ? 'note note-action' : 'note note-fini'}>
+        {suivante ? (
+          <>
+            <strong>Prochaine étape :</strong> {suivante.texte} —{' '}
+            <a href={suivante.ancre}>y aller tout de suite ↓</a>
+            <div className="carte-detail">
+              {faits} étape(s) sur {etapes.length} déjà faite(s) pour ce projet.
+            </div>
+          </>
+        ) : (
+          <>
+            <strong>Tout est renseigné pour ce projet.</strong> Il ne manque que le moteur de
+            rendu : la demande partira quand il sera branché.
+          </>
+        )}
+      </div>
 
       <table>
         <thead>
@@ -129,7 +186,7 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         </tbody>
       </table>
 
-      <h2>1. Le script, scène par scène</h2>
+      <h2 id="etape-1">1. Le script, scène par scène</h2>
       <p className="sous-titre">
         Découpe ta vidéo en scènes. La durée totale doit tenir entre 15 et 60 secondes — la règle
         est vérifiée <strong>par le serveur</strong>, pas seulement affichée ici.
@@ -140,7 +197,7 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         scenesInitiales={script?.scenes ?? []}
       />
 
-      <h2>2. Le template</h2>
+      <h2 id="etape-2">2. Le template</h2>
       <p className="sous-titre">
         {templates.length} templates disponibles, lus dans la table <code>templates</code> de la
         base. Format de sortie : vertical 9:16.
@@ -151,7 +208,7 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         templateActuel={projet.templateId}
       />
 
-      <h2>3. L&apos;apparence</h2>
+      <h2 id="etape-3">3. L&apos;apparence</h2>
       <p className="sous-titre">
         Couleurs, police et musique. Par défaut, on te propose celles de ton{' '}
         <Link href="/kit-marque">kit de marque</Link> ; tu peux les changer pour ce projet
@@ -165,14 +222,14 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         lienMusique={lienMusique}
       />
 
-      <h2>4. Les images</h2>
+      <h2 id="etape-4">4. Les images</h2>
       <p className="sous-titre">
         Ajoute des visuels qui accompagneront tes scènes. Ils sont déposés dans le{' '}
         <strong>stockage privé</strong> : personne d&apos;autre que toi ne peut les voir.
       </p>
       <ImagesProjet projetId={projet.id} images={images} />
 
-      <h2>5. La génération</h2>
+      <h2 id="etape-5">5. La génération</h2>
       <p className="sous-titre">
         Cette étape enregistre une demande réelle dans la table <code>render_jobs</code>.{' '}
         <strong>Le worker de rendu n&apos;est pas encore branché</strong> — il attend la phase 5

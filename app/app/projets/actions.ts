@@ -10,6 +10,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { creerClientServeur } from '@/lib/supabase/server'
 import { obtenirDepotPourJeton } from '@/lib/data'
 
@@ -45,22 +46,31 @@ export async function creerProjet(
     return { erreur: 'Origine inconnue pour ce projet.' }
   }
 
-  try {
-    const depot = obtenirDepotPourJeton(s.access_token)
-    await depot.creerProjet({
-      userId: s.user.id,
-      titre,
-      entreeSource: entreeSource as 'texte' | 'images' | 'voix' | 'video',
-      idee: idee || null,
-    })
-  } catch (erreur) {
-    return {
-      erreur: `La creation a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
+  const projet = await (async () => {
+    try {
+      const depot = obtenirDepotPourJeton(s.access_token)
+      return await depot.creerProjet({
+        userId: s.user.id,
+        titre,
+        entreeSource: entreeSource as 'texte' | 'images' | 'voix' | 'video',
+        idee: idee || null,
+      })
+    } catch (erreur) {
+      return null
     }
+  })()
+
+  if (!projet) {
+    return { erreur: 'La création a échoué. Recharge la page et réessaie.' }
   }
 
   revalidatePath('/projets')
-  return { succes: `Projet « ${titre} » cree.` }
+
+  // On emmene DIRECTEMENT l'utilisateur dans son projet.
+  // Constat d'usage reel : sans cette redirection, on reste sur la liste et il
+  // faut deviner qu'il faut cliquer sur le titre pour continuer — un projet
+  // reste alors vide alors que tout est pret.
+  redirect(`/projets/${projet.id}`)
 }
 
 export async function supprimerProjet(projetId: string): Promise<void> {

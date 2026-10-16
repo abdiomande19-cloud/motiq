@@ -804,3 +804,15 @@ h3 {
   text-align: center;
   align-self: stretch;
 }
+
+/* ---------------------------------------------- guide de progression */
+
+.note-action {
+  border-left-color: var(--accent);
+  font-size: 1.02rem;
+}
+
+.note-fini {
+  border-left-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, var(--fond-2));
+}
