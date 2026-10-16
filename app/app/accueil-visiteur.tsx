@@ -1,13 +1,16 @@
 import Link from 'next/link'
 import { depot } from '@/lib/data'
+import { formaterPrix, PERIODE, TARIFS } from '@/lib/tarifs'
 import Apercu from './projets/[id]/apercu'
 
 /**
  * Motiq — accueil visiteur (ecran 01 de la phase 1).
  *
- * Le texte reprend la maquette VALIDEE. Les tarifs en particulier : le plan
- * gratuit est a 0 €, les deux autres restent « a definir ». Inventer des prix
- * serait pire que laisser un emplacement vide.
+ * Le texte reprend la maquette VALIDEE. Les tarifs affiches viennent de
+ * lib/tarifs.ts, source unique : 4 900 F/mois pour Pro, 9 900 F/mois pour
+ * Business, montants fixes par le donneur d'ordre. La maquette les annoncait
+ * « a definir » ; c'est remplace, et l'application ne peut plus diverger des
+ * maquettes sur ce point.
  *
  * La preuve technique du socle (lecture de la base, etat des phases) vit sur
  * /etat : ce n'est pas ce qu'un visiteur vient chercher.
@@ -54,8 +57,8 @@ const PLANS: Plan[] = [
   {
     nom: 'Gratuit',
     badge: 'Toujours gratuit',
-    prix: '0 €',
-    precision: '/mois',
+    prix: formaterPrix(TARIFS.gratuit.prix),
+    precision: PERIODE,
     avantages: ['Quelques vidéos par mois', 'Qualité standard', 'Filigrane Motiq'],
     exclus: ['Kit de marque', 'Export sans filigrane'],
     action: 'Créer un compte',
@@ -63,8 +66,8 @@ const PLANS: Plan[] = [
   {
     nom: 'Pro',
     badge: 'Populaire',
-    prix: 'À définir',
-    precision: '— prix à valider',
+    prix: formaterPrix(TARIFS.pro.prix),
+    precision: PERIODE,
     avantages: [
       'Exports HD sans filigrane',
       'Kit de marque (logo, couleurs, police)',
@@ -77,9 +80,9 @@ const PLANS: Plan[] = [
   },
   {
     nom: 'Business',
-    badge: 'À valider',
-    prix: 'À définir',
-    precision: '— prix à valider',
+    badge: 'Meilleure qualité',
+    prix: formaterPrix(TARIFS.business.prix),
+    precision: PERIODE,
     avantages: ['Haute qualité', 'Rendu prioritaire', 'Quotas les plus élevés'],
     exclus: ['Espace équipe (version 2)'],
     action: 'Choisir Business',

@@ -73,7 +73,7 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
     titre: 'Abonnements',
     etat: 'bloque',
     detail:
-      "Attend : les clés Stripe (secrète, publique, webhook) ET les prix des plans Pro et Business. La maquette validée les annonce « à définir » : aucun montant n'est inventé. La base est prête (table subscriptions, quotas protégés).",
+      "Tarifs fixés par le donneur d'ordre : 4 900 F CFA/mois (Pro) et 9 900 F CFA/mois (Business). Ils sont affichés par l'accueil et par les maquettes depuis une source unique (lib/tarifs.ts) — plus aucun « à définir ». Attend encore : les clés Stripe (secrète, publique, webhook) pour encaisser, et les quotas de rendus par plan. La base est prête (table subscriptions, quotas protégés côté serveur).",
   },
   {
     num: 9,

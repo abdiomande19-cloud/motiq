@@ -55,11 +55,34 @@ Ces éléments sont **absents ou inertes, jamais simulés** :
 |---|---|
 | Génération vidéo et export MP4 | une clé d'IA + un moteur de rendu |
 | Transcription des notes vocales | un service de transcription |
-| Abonnements Gratuit / Pro / Business | Stripe **et les prix** (à définir) |
+| Abonnements Gratuit / Pro / Business | les clés Stripe — **les prix, eux, sont fixés** (voir ci-dessous) |
 | Connexion Google | une configuration côté Google Cloud |
 | Suppression du compte, changement d'email | un envoi d'email de confirmation |
 
 La page **`/etat`** affiche cet état en direct, avec les compteurs lus dans la base.
+
+---
+
+## Tarifs
+
+Source unique : **`lib/tarifs.ts`**. Les prix n'existent qu'à cet endroit — l'accueil et les
+maquettes les lisent, ils ne les recopient pas.
+
+| Plan | Prix | Rendus / mois |
+|---|---|---|
+| Gratuit | 0 F CFA | 3 |
+| Pro | **4 900 F CFA** / mois | à fixer |
+| Business | **9 900 F CFA** / mois | à fixer |
+
+Montants **fixés par le donneur d'ordre** — ils ne sont pas déduits ni estimés. La maquette de
+phase 1 les annonçait « à définir » ; c'est remplacé.
+
+Deux points restent ouverts, volontairement :
+
+- **Les quotas par plan.** Seul le gratuit (3/mois) est posé. Un chiffre trop généreux engage un
+  coût réel : chaque rendu consomme des appels payants. À fixer avec le coût d'un rendu.
+- **La devise est stockée en entier**, jamais en flottant : 4900 et non 49.00. Un prix qui passe
+  par un flottant finit par produire des arrondis faux au moment de facturer.
 
 ---
 
