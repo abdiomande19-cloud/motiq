@@ -176,6 +176,31 @@ fabrication des icônes, connexion à Supabase sans CLI.
 
 Ces scripts sont conservés parce qu'ils constituent la démonstration : ils peuvent être relancés.
 
+### Tout re-vérifier en une commande
+
+```bash
+python outils/verifier-tout.py
+```
+
+Relance les **11 contrôles** et rend un verdict. Dernière exécution : **11 / 11 en 36 secondes**.
+
+```
+OK   Schema : 8 tables, RLS, politiques
+OK   Fichier de secrets lisible
+OK   Cloisonnement entre comptes
+OK   Regles metier : duree, template
+OK   Stockage prive
+OK   Aller-retour d'un fichier, octet par octet
+OK   Apparence du projet
+OK   Medias : suppression croisee
+OK   Protection du plan payant
+OK   Quota : decompte reserve au serveur
+OK   Quota : renouvellement mensuel
+```
+
+Chaque contrôle écrit **hors de l'interface**, avec les jetons de deux comptes réels : il ne peut
+pas passer grâce à une protection qui n'existerait que dans le code applicatif.
+
 ---
 
 ## Notes de développement
