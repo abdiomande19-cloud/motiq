@@ -398,6 +398,29 @@ export class DepotSupabase implements DepotMotiq {
     return versAsset(data as LigneAsset)
   }
 
+  async supprimerAsset(userId: string, assetId: string): Promise<Asset | null> {
+    // On lit d'abord : la politique RLS ecarte les medias des autres projets,
+    // donc « introuvable » et « pas le tien » sont traites de la meme facon.
+    const { data, error } = await this.client
+      .from('assets')
+      .select('*, projects!inner(user_id)')
+      .eq('id', assetId)
+      .eq('projects.user_id', userId)
+      .maybeSingle()
+    verifier(error, 'lecture du media a supprimer')
+    if (!data) return null
+
+    const asset = versAsset(data as unknown as LigneAsset)
+
+    const { error: erreurSuppression } = await this.client
+      .from('assets')
+      .delete()
+      .eq('id', assetId)
+    verifier(erreurSuppression, 'suppression du media')
+
+    return asset
+  }
+
   // ---------------------------------------------------------------- templates
   async listerTemplates(): Promise<Template[]> {
     const { data, error } = await this.client

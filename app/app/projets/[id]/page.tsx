@@ -7,6 +7,7 @@ import { lienSigne } from '@/lib/fichiers'
 import EditeurScenes from './editeur-scenes'
 import ChoixTemplate from './choix-template'
 import ApparenceProjet from './apparence'
+import ImagesProjet from './images'
 import BoutonGeneration from './bouton-generation'
 
 export const metadata: Metadata = {
@@ -59,6 +60,16 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
 
   // La musique est dans un bucket prive : on fabrique un lien signe pour la lire.
   const lienMusique = await lienSigne(projet.apparence?.musique ?? null)
+
+  // Chaque image aussi : le bucket est prive, donc une adresse signee par image.
+  const images = await Promise.all(
+    assets.map(async (asset) => ({
+      id: asset.id,
+      nom: asset.chemin.split('/').pop() ?? 'image',
+      poids: asset.tailleOctets ? `${Math.max(1, Math.round(asset.tailleOctets / 1024))} Ko` : '—',
+      lien: await lienSigne(asset.chemin),
+    })),
+  )
 
   const script = projet.script
   const scenesTotal = script?.scenes.length ?? 0
@@ -154,7 +165,14 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         lienMusique={lienMusique}
       />
 
-      <h2>4. La génération</h2>
+      <h2>4. Les images</h2>
+      <p className="sous-titre">
+        Ajoute des visuels qui accompagneront tes scènes. Ils sont déposés dans le{' '}
+        <strong>stockage privé</strong> : personne d&apos;autre que toi ne peut les voir.
+      </p>
+      <ImagesProjet projetId={projet.id} images={images} />
+
+      <h2>5. La génération</h2>
       <p className="sous-titre">
         Cette étape enregistre une demande réelle dans la table <code>render_jobs</code>.{' '}
         <strong>Le worker de rendu n&apos;est pas encore branché</strong> — il attend la phase 5

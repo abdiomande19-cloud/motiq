@@ -93,3 +93,15 @@ export async function lienSigne(chemin: string | null, secondes = 3600): Promise
   if (error) return null
   return data.signedUrl
 }
+
+/**
+ * Retire un fichier du stockage.
+ *
+ * La politique du bucket s'applique aussi ici : le chemin doit commencer par
+ * l'identifiant de l'utilisateur. Impossible de supprimer le fichier d'un autre.
+ */
+export async function retirerFichier(chemin: string): Promise<boolean> {
+  const supabase = await creerClientServeur()
+  const { error } = await supabase.storage.from(BUCKET).remove([chemin])
+  return !error
+}

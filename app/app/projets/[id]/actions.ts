@@ -15,7 +15,10 @@ import { obtenirDepotPourJeton } from '@/lib/data'
 import { estPoliceValide } from '@/lib/polices'
 import {
   deposerFichier,
+  retirerFichier,
+  TAILLE_MAX,
   TAILLE_SON_MAX,
+  TYPES_ACCEPTES,
   TYPES_SON,
 } from '@/lib/fichiers'
 import type { Scene } from '@/lib/data'
@@ -321,4 +324,88 @@ export async function retirerMusique(
 
   revalidatePath(`/projets/${projetId}`)
   return { succes: 'Musique retiree.' }
+}
+
+// ------------------------------------------------------------------ images
+
+export async function deposerImage(
+  _etat: EtatAction,
+  donnees: FormData,
+): Promise<EtatAction> {
+  const s = await session()
+  if (!s) return { erreur: 'Ta session a expire. Reconnecte-toi.' }
+
+  const projetId = String(donnees.get('projetId') ?? '')
+  const fichier = donnees.get('image')
+  if (!(fichier instanceof File) || fichier.size === 0) {
+    return { erreur: 'Choisis une image.' }
+  }
+
+  const depotFichier = await deposerFichier('images', fichier, {
+    types: TYPES_ACCEPTES,
+    tailleMax: TAILLE_MAX,
+    descriptionTypes: 'PNG, JPEG, WebP ou SVG',
+  })
+  if (depotFichier.erreur || !depotFichier.chemin) {
+    return { erreur: depotFichier.erreur ?? 'Depot impossible.' }
+  }
+
+  try {
+    const depot = obtenirDepotPourJeton(s.access_token)
+    await depot.enregistrerAsset({
+      id: crypto.randomUUID(),
+      projetId,
+      type: 'image',
+      chemin: depotFichier.chemin,
+      tailleOctets: fichier.size,
+    })
+  } catch (erreur) {
+    // Le fichier est deja dans le stockage : si la fiche echoue, on le retire
+    // pour ne pas laisser un fichier orphelin, invisible et jamais facture.
+    await retirerFichier(depotFichier.chemin)
+    return {
+      erreur: `L'enregistrement a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
+    }
+  }
+
+  revalidatePath(`/projets/${projetId}`)
+  return { succes: 'Image ajoutee au projet.' }
+}
+
+export async function retirerImage(
+  _etat: EtatAction,
+  donnees: FormData,
+): Promise<EtatAction> {
+  const s = await session()
+  if (!s) return { erreur: 'Ta session a expire. Reconnecte-toi.' }
+
+  const projetId = String(donnees.get('projetId') ?? '')
+  const assetId = String(donnees.get('assetId') ?? '')
+
+  try {
+    const depot = obtenirDepotPourJeton(s.access_token)
+    const retire = await depot.supprimerAsset(s.user.id, assetId)
+    if (!retire) return { erreur: 'Ce media est introuvable, ou ne t appartient pas.' }
+
+    // La fiche est supprimee ; on retire aussi le fichier du stockage.
+    await retirerFichier(retire.chemin)
+  } catch (erreur) {
+    return {
+      erreur: `La suppression a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
+    }
+  }
+
+  revalidatePath(`/projets/${projetId}`)
+  return { succes: 'Image retiree.' }
+}
+
+/**
+ * Version sans etat, pour les boutons d'une liste.
+ *
+ * `useActionState` sert quand on veut un message de retour ; ici chaque image a
+ * son propre bouton, et partager un seul etat entre toutes afficherait le
+ * message de la mauvaise vignette.
+ */
+export async function retirerImageSimple(donnees: FormData): Promise<void> {
+  await retirerImage({}, donnees)
 }

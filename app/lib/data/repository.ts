@@ -71,6 +71,12 @@ export interface DepotMotiq {
   // --- Medias ----------------------------------------------------------
   listerAssets(userId: string, projetId: string): Promise<Asset[]>
   enregistrerAsset(asset: Omit<Asset, 'creeLe'>): Promise<Asset>
+  /**
+   * Supprime un media et rend ce qui a ete supprime (null s'il n'existe pas ou
+   * n'appartient pas a cet utilisateur). Rendre l'objet permet a l'appelant de
+   * retirer aussi le fichier du stockage, sans lecture supplementaire.
+   */
+  supprimerAsset(userId: string, assetId: string): Promise<Asset | null>
 
   // --- Templates -------------------------------------------------------
   listerTemplates(): Promise<Template[]>

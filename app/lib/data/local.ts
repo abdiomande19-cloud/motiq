@@ -228,6 +228,22 @@ export class DepotLocal implements DepotMotiq {
     return complet
   }
 
+  async supprimerAsset(userId: string, assetId: string): Promise<Asset | null> {
+    const base = await lire()
+    const index = base.assets.findIndex((a) => a.id === assetId)
+    if (index === -1) return null
+
+    const asset = base.assets[index]
+    // Verification d'appartenance : le media doit appartenir a un projet
+    // de cet utilisateur.
+    const appartient = base.projets.some((p) => p.id === asset.projetId && p.userId === userId)
+    if (!appartient) return null
+
+    base.assets.splice(index, 1)
+    await ecrire(base)
+    return asset
+  }
+
   // --- Templates -------------------------------------------------------------
 
   async listerTemplates(): Promise<Template[]> {
