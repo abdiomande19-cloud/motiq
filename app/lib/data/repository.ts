@@ -67,6 +67,16 @@ export interface DepotMotiq {
     changements: Partial<Pick<Profil, 'nom' | 'plan'>>,
   ): Promise<Profil>
 
+  /**
+   * Decompte le quota d'un rendu.
+   *
+   * Cette operation appartient au SERVEUR : un utilisateur ne doit pas pouvoir
+   * augmenter son propre quota. La migration 0005 le lui interdit deja cote
+   * base ; l'implementation Supabase passe par une fonction reservee au role
+   * `service_role`, donc la cle secrete.
+   */
+  decrementerQuota(userId: string, nombre?: number): Promise<Profil>
+
   // --- Projets ---------------------------------------------------------
   listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]>
   obtenirProjet(userId: string, projetId: string): Promise<Projet | null>

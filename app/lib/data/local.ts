@@ -137,6 +137,19 @@ export class DepotLocal implements DepotMotiq {
     return profil
   }
 
+  async decrementerQuota(userId: string, nombre = 1): Promise<Profil> {
+    const base = await lire()
+    const profil = base.profils.find((p) => p.id === userId)
+    if (!profil) throw new Error(`Motiq : profil introuvable (${userId}).`)
+
+    // Jamais en dessous de zero : le quota ne peut pas devenir negatif.
+    profil.quotaRestant = Math.max(0, profil.quotaRestant - Math.max(0, nombre))
+    profil.majLe = maintenant()
+
+    await ecrire(base)
+    return profil
+  }
+
   // --- Projets ---------------------------------------------------------------
 
   async listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]> {

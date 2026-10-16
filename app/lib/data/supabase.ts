@@ -280,6 +280,22 @@ export class DepotSupabase implements DepotMotiq {
     return versProfil(data as LigneProfil)
   }
 
+  async decrementerQuota(userId: string, nombre = 1): Promise<Profil> {
+    // Fonction SQL : la soustraction est atomique. Deux rendus lances en meme
+    // temps consomment bien deux credits, ce qu'un lire-puis-ecrire raterait.
+    const { data, error } = await this.client.rpc('decrementer_quota', {
+      p_user_id: userId,
+      p_nombre: nombre,
+    })
+    verifier(error, 'decompte du quota')
+
+    const ligne = Array.isArray(data) ? data[0] : data
+    if (!ligne) {
+      throw new Error('Motiq : le quota n a pas pu etre decremente (profil introuvable ?).')
+    }
+    return versProfil(ligne as LigneProfil)
+  }
+
   // ---------------------------------------------------------------- projets
   async listerProjets(userId: string, filtres: FiltresProjets = {}): Promise<Projet[]> {
     let requete = this.client

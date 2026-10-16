@@ -11,7 +11,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { creerClientServeur } from '@/lib/supabase/server'
-import { obtenirDepotPourJeton } from '@/lib/data'
+import { obtenirDepot, obtenirDepotPourJeton } from '@/lib/data'
 import { estPoliceValide } from '@/lib/polices'
 import {
   deposerFichier,
@@ -180,23 +180,49 @@ export async function lancerGeneration(
     if (!projet.templateId) return { erreur: "Choisis d'abord un template." }
 
     const profil = await depot.obtenirProfil(s.user.id)
+    if (!profil) {
+      return { erreur: 'Ton profil est introuvable. Va sur la page Réglages.' }
+    }
+
+    // Le quota est verifie AVANT d'enregistrer quoi que ce soit : inutile de
+    // creer une demande de rendu qu'on refuserait ensuite.
+    if (profil.quotaRestant <= 0) {
+      return {
+        erreur:
+          `Quota épuisé : ${profil.quotaRestant} rendu restant ce mois-ci. ` +
+          "Les plans Pro et Business ne sont pas encore disponibles (le paiement n'est pas branché) — " +
+          'ton quota se renouvellera quand ce sera fait.',
+      }
+    }
 
     // L'enregistrement du job est REEL : la ligne existe dans render_jobs.
     // En revanche, aucun worker ne la traitera tant que la phase 5 n'est pas
     // branchee — c'est ecrit noir sur blanc dans l'interface, pas simule.
-    await depot.creerRendu({ projetId, plan: profil?.plan ?? 'gratuit' })
+    await depot.creerRendu({ projetId, plan: profil.plan })
     await depot.mettreAJourProjet(s.user.id, projetId, { statut: 'en_generation' })
+
+    // Le quota et la consommation appartiennent au SERVEUR : l'utilisateur ne
+    // peut pas les modifier (la migration 0005 le lui interdit). On passe donc
+    // par la cle secrete, sinon l'operation serait refusee — et c'est voulu.
+    const depotServeur = obtenirDepot()
+    const profilApres = await depotServeur.decrementerQuota(s.user.id, 1)
+
+    const mois = new Date().toISOString().slice(0, 7)
+    const minutes = Math.round(((projet.script?.dureeTotaleSecondes ?? 0) / 60) * 100) / 100
+    await depotServeur.incrementerUsage(s.user.id, mois, minutes)
+
+    revalidatePath(`/projets/${projetId}`)
+    revalidatePath('/reglages')
+    return {
+      succes:
+        `Demande enregistree dans render_jobs (statut « en attente »). ` +
+        `Quota restant : ${profilApres.quotaRestant}. ` +
+        "Le worker de rendu n'est pas encore branche : rien ne sera produit pour l'instant.",
+    }
   } catch (erreur) {
     return {
       erreur: `Le lancement a echoue : ${erreur instanceof Error ? erreur.message : 'raison inconnue'}`,
     }
-  }
-
-  revalidatePath(`/projets/${projetId}`)
-  return {
-    succes:
-      'Demande enregistree dans render_jobs (statut « en attente »). ' +
-      "Le worker de rendu n'est pas encore branche : rien ne sera produit pour l'instant.",
   }
 }
 
