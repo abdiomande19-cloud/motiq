@@ -31,41 +31,56 @@ const PHASES: { num: number; titre: string; etat: 'fait' | 'en_cours' | 'bloque'
     titre: 'Fondations back-end',
     etat: 'fait',
     detail:
-      'Supabase relié (projet motiq, Europe de l\'Ouest) : 8 tables, RLS active sur les 8 avec 18 politiques, bucket de stockage privé, 5 déclencheurs. Dépôt Supabase implémenté : les 24 méthodes du contrat. Vérifié : avec la clé publique, 0 ligne visible et écriture refusée.',
+      "Supabase relié (projet motiq, Europe de l'Ouest) : 8 tables, RLS active sur les 8 avec 18 politiques, bucket de stockage privé, 5 déclencheurs. Dépôt Supabase implémenté : les 26 méthodes du contrat. Vérifié : avec la clé publique, 0 ligne visible et écriture refusée.",
   },
   {
     num: 3,
     titre: 'Comptes et session',
     etat: 'fait',
     detail:
-      'Inscription, connexion, déconnexion. Session par cookies httpOnly, rafraîchie à chaque requête. Routes privées protégées et redirection avec mémorisation de la page visée. Profil créé automatiquement à l\'inscription. Vérifié : entre deux comptes réels, aucun ne voit ni ne modifie les données de l\'autre (403 sur l\'usurpation).',
+      "Inscription, connexion, déconnexion. Session par cookies httpOnly, rafraîchie à chaque requête. Routes privées protégées et redirection avec mémorisation de la page visée. Profil créé automatiquement à l'inscription. Vérifié : entre deux comptes réels, aucun ne voit ni ne modifie les données de l'autre (403 sur l'usurpation).",
   },
   {
     num: 4,
     titre: 'Parcours projet',
     etat: 'fait',
     detail:
-      'Bibliothèque de projets (créer, ouvrir, dupliquer, supprimer) et fiche projet complète : script découpé en scènes avec durées, choix parmi les 8 templates, demande de rendu. Les règles métier (durée de 15 à 60 s, au moins une scène, template existant) sont appliquées PAR LA BASE, pas seulement par l\u2019écran — vérifié en écrivant directement par l\u2019API, hors interface.',
+      "Bibliothèque de projets (créer, ouvrir, dupliquer, supprimer) et fiche projet complète en cinq étapes : script, template, apparence, images, aperçu — puis demande de rendu. Les règles métier (durée de 15 à 60 s, au moins une scène, template existant) sont appliquées PAR LA BASE. Vérifié en écrivant directement par l'API, hors interface.",
   },
   {
     num: 5,
     titre: 'Personnalisation et installation',
     etat: 'fait',
     detail:
-      'Application installable (manifeste, icônes 192/512 px dont maskable, service worker, bouton d\u2019installation). Kit de marque : logo, 2 ou 3 couleurs, police, avec aperçu réel. Apparence par projet : couleurs, police et musique, héritées du kit de marque et modifiables projet par projet. Le stockage est privé : logo et musique se lisent par un lien signé d\u2019une heure. Vérifié : un autre compte ne peut ni déposer ni lire dans ton dossier.',
+      "Application installable (manifeste, icônes 192/512 px dont maskable, service worker, bouton d'installation). Kit de marque et apparence par projet : logo, couleurs, police, musique, avec aperçu fidèle. Aperçu animé des scènes, également en démonstration publique. Stockage privé : tout se lit par un lien signé d'une heure. Quota décompté par le serveur et renouvelé chaque mois.",
   },
   {
     num: 6,
-    titre: 'Moteur motion design',
-    etat: 'bloque',
+    titre: 'Finitions et vérification',
+    etat: 'fait',
     detail:
-      'Attend : une clé d\u2019IA pour écrire le script depuis une idée (décision du donneur d\u2019ordre : sans pour l\u2019instant, le service est payant), un service de transcription, et un moteur de rendu vidéo.',
+      "Accueil visiteur reprenant la maquette validée, page 404 qui ne révèle pas l'existence d'un projet d'autrui, page d'erreur affichant le message réel. Les 11 contrôles de sécurité se relancent en une commande (outils/verifier-tout.py) et passent 11/11 en 36 secondes. Comptes et fichiers de test nettoyés après vérification.",
   },
   {
     num: 7,
+    titre: 'Moteur motion design',
+    etat: 'bloque',
+    detail:
+      "Attend : une clé d'IA pour écrire le script depuis une idée (décision du donneur d'ordre : sans pour l'instant, le service est payant), un service de transcription pour les notes vocales, et un moteur de rendu vidéo pour produire le MP4.",
+  },
+  {
+    num: 8,
     titre: 'Abonnements',
     etat: 'bloque',
-    detail: 'Attend : clés Stripe (secrète, publique, webhook) et identification des prix Pro et Business.',
+    detail:
+      "Attend : les clés Stripe (secrète, publique, webhook) ET les prix des plans Pro et Business. La maquette validée les annonce « à définir » : aucun montant n'est inventé. La base est prête (table subscriptions, quotas protégés).",
+  },
+  {
+    num: 9,
+    titre: 'Connexion Google',
+    etat: 'en_cours',
+    detail:
+      "Techniquement prête côté application. Demande un identifiant OAuth à créer dans Google Cloud (gratuit) puis à déclarer dans Supabase. La connexion par email fonctionne déjà.",
   },
 ]
 

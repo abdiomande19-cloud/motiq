@@ -98,6 +98,10 @@ def main() -> int:
         return 1
 
     print("\n Toutes les protections annoncees dans le README sont verifiees.")
+    print()
+    print(" Ces controles CREENT des comptes de test (@exemple.invalid) et leurs")
+    print(" fichiers. Pour les retirer une fois la verification faite :")
+    print("     python outils/nettoyer-tests.py --confirmer")
     return 0
 
 
