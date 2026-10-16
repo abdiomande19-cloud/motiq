@@ -45,6 +45,7 @@ interface LigneProfil {
   nom: string
   plan: Profil['plan']
   quota_restant: number
+  quota_mois: string
   cree_le: string
   maj_le: string
 }
@@ -127,6 +128,7 @@ const versProfil = (l: LigneProfil): Profil => ({
   nom: l.nom,
   plan: l.plan,
   quotaRestant: l.quota_restant,
+  quotaMois: l.quota_mois,
   creeLe: l.cree_le,
   majLe: l.maj_le,
 })
@@ -292,6 +294,20 @@ export class DepotSupabase implements DepotMotiq {
     const ligne = Array.isArray(data) ? data[0] : data
     if (!ligne) {
       throw new Error('Motiq : le quota n a pas pu etre decremente (profil introuvable ?).')
+    }
+    return versProfil(ligne as LigneProfil)
+  }
+
+  async assurerQuotaDuMois(userId: string, quotaParDefaut: number): Promise<Profil> {
+    const { data, error } = await this.client.rpc('assurer_quota_du_mois', {
+      p_user_id: userId,
+      p_quota_par_defaut: quotaParDefaut,
+    })
+    verifier(error, 'renouvellement du quota')
+
+    const ligne = Array.isArray(data) ? data[0] : data
+    if (!ligne) {
+      throw new Error('Motiq : le quota n a pas pu etre renouvele (profil introuvable ?).')
     }
     return versProfil(ligne as LigneProfil)
   }

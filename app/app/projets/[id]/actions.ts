@@ -41,6 +41,15 @@ const DUREE_MIN = 15
 const DUREE_MAX = 60
 const DUREE_SCENE_MAX = 30
 
+/**
+ * Dotation mensuelle du plan gratuit.
+ *
+ * La maquette de phase 1 annonce des « quotas provisoires — a valider » : ce 3
+ * est la valeur posee a l'inscription, pas un chiffre invente. Les dotations Pro
+ * et Business seront fixees avec les abonnements.
+ */
+const QUOTA_GRATUIT = 3
+
 /** Valide et normalise les scenes venues du navigateur. */
 function analyserScenes(brut: unknown): { scenes: Scene[]; erreur?: string } {
   if (!Array.isArray(brut)) return { scenes: [], erreur: 'Le script est illisible.' }
@@ -179,7 +188,16 @@ export async function lancerGeneration(
     if (!projet.script) return { erreur: "Enregistre d'abord le script." }
     if (!projet.templateId) return { erreur: "Choisis d'abord un template." }
 
-    const profil = await depot.obtenirProfil(s.user.id)
+    // Le quota appartient au SERVEUR : la migration 0005 interdit a
+    // l'utilisateur d'y toucher. On le renouvelle d'abord s'il date d'un mois
+    // precedent — sinon un compte gratuit resterait bloque pour toujours apres
+    // ses premiers rendus, alors que le cahier des charges promet « quelques
+    // videos par mois ».
+    const depotServeur = obtenirDepot()
+    const profil = await depotServeur
+      .assurerQuotaDuMois(s.user.id, QUOTA_GRATUIT)
+      .catch(() => null)
+
     if (!profil) {
       return { erreur: 'Ton profil est introuvable. Va sur la page Réglages.' }
     }
@@ -190,8 +208,8 @@ export async function lancerGeneration(
       return {
         erreur:
           `Quota épuisé : ${profil.quotaRestant} rendu restant ce mois-ci. ` +
-          "Les plans Pro et Business ne sont pas encore disponibles (le paiement n'est pas branché) — " +
-          'ton quota se renouvellera quand ce sera fait.',
+          "Les plans Pro et Business ne sont pas encore disponibles (le paiement n'est pas branché). " +
+          'Ton quota se renouvellera le mois prochain.',
       }
     }
 
@@ -201,10 +219,7 @@ export async function lancerGeneration(
     await depot.creerRendu({ projetId, plan: profil.plan })
     await depot.mettreAJourProjet(s.user.id, projetId, { statut: 'en_generation' })
 
-    // Le quota et la consommation appartiennent au SERVEUR : l'utilisateur ne
-    // peut pas les modifier (la migration 0005 le lui interdit). On passe donc
-    // par la cle secrete, sinon l'operation serait refusee — et c'est voulu.
-    const depotServeur = obtenirDepot()
+    // Le decompte et la consommation appartiennent aussi au serveur.
     const profilApres = await depotServeur.decrementerQuota(s.user.id, 1)
 
     const mois = new Date().toISOString().slice(0, 7)

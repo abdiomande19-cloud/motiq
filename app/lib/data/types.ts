@@ -40,6 +40,8 @@ export interface Profil {
   plan: Plan
   /** Nombre de rendus encore disponibles ce mois-ci. */
   quotaRestant: number
+  /** Mois auquel se rattache le quota (AAAA-MM-01). Sert a le renouveler. */
+  quotaMois: string
   creeLe: string
   majLe: string
 }

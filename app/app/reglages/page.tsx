@@ -48,6 +48,7 @@ export default async function PageReglages() {
         nom: (utilisateur.user_metadata?.nom as string) || (utilisateur.email ?? '').split('@')[0],
         plan: 'gratuit',
         quotaRestant: 3,
+        quotaMois: `${new Date().toISOString().slice(0, 7)}-01`,
       })
       profilRecree = true
     } catch {

@@ -77,6 +77,18 @@ export interface DepotMotiq {
    */
   decrementerQuota(userId: string, nombre?: number): Promise<Profil>
 
+  /**
+   * Renouvelle le quota s'il date d'un mois precedent, puis rend le profil.
+   *
+   * A appeler AVANT toute verification de quota : sans cela, un utilisateur du
+   * plan gratuit resterait bloque pour toujours apres ses premiers rendus, alors
+   * que le cahier des charges promet « quelques videos par mois ».
+   *
+   * Operation serveur, comme le decompte : un utilisateur ne doit pas pouvoir
+   * se renouveler son quota a volonte.
+   */
+  assurerQuotaDuMois(userId: string, quotaParDefaut: number): Promise<Profil>
+
   // --- Projets ---------------------------------------------------------
   listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]>
   obtenirProjet(userId: string, projetId: string): Promise<Projet | null>

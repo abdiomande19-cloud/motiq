@@ -150,6 +150,24 @@ export class DepotLocal implements DepotMotiq {
     return profil
   }
 
+  async assurerQuotaDuMois(userId: string, quotaParDefaut: number): Promise<Profil> {
+    const base = await lire()
+    const profil = base.profils.find((p) => p.id === userId)
+    if (!profil) throw new Error(`Motiq : profil introuvable (${userId}).`)
+
+    const moisCourant = `${new Date().toISOString().slice(0, 7)}-01`
+
+    // Le quota date d'un mois precedent : on le renouvelle.
+    if (profil.quotaMois < moisCourant) {
+      profil.quotaRestant = quotaParDefaut
+      profil.quotaMois = moisCourant
+      profil.majLe = maintenant()
+      await ecrire(base)
+    }
+
+    return profil
+  }
+
   // --- Projets ---------------------------------------------------------------
 
   async listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]> {
