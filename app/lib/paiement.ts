@@ -153,7 +153,16 @@ export async function verifierTransaction(
 
   const d = resultat.data
   const client = (d.customer ?? {}) as Record<string, unknown>
-  const plan = (d.plan ?? {}) as Record<string, unknown> | null
+
+  // PIEGE VERIFIE : dans la reponse de verification, `plan` est une CHAINE
+  // (« PLN_... »), alors qu'ailleurs l'API renvoie un OBJET { plan_code }.
+  // Les deux formes arrivent reellement — attendre uniquement l'objet laissait
+  // plan_code vide en base, sans aucune erreur. On accepte les deux.
+  const planBrut = d.plan
+  const codePlan =
+    typeof planBrut === 'string'
+      ? planBrut
+      : ((planBrut as Record<string, unknown> | null)?.plan_code ?? null)
 
   return {
     ok: true,
@@ -164,7 +173,7 @@ export async function verifierTransaction(
       reference: String(d.reference ?? reference),
       email: String(client.email ?? ''),
       codeClient: client.customer_code ? String(client.customer_code) : null,
-      planCode: plan?.plan_code ? String(plan.plan_code) : null,
+      planCode: codePlan ? String(codePlan) : null,
       metadonnees: (d.metadata ?? {}) as Record<string, unknown>,
     },
   }
