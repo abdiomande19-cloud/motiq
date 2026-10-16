@@ -46,6 +46,7 @@ export default function LienCompte() {
     <>
       <Link href="/projets">Mes projets</Link>
       <Link href="/kit-marque">Kit de marque</Link>
+      <Link href="/reglages">Réglages</Link>
     </>
   ) : (
     <Link href="/connexion">Se connecter</Link>

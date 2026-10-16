@@ -121,12 +121,18 @@ export class DepotLocal implements DepotMotiq {
     return complet
   }
 
-  async mettreAJourPlan(userId: string, plan: Profil['plan']): Promise<Profil> {
+  async mettreAJourProfil(
+    userId: string,
+    changements: Partial<Pick<Profil, 'nom' | 'plan'>>,
+  ): Promise<Profil> {
     const base = await lire()
     const profil = base.profils.find((p) => p.id === userId)
     if (!profil) throw new Error(`Motiq : profil introuvable (${userId}).`)
-    profil.plan = plan
+
+    if (changements.nom !== undefined) profil.nom = changements.nom
+    if (changements.plan !== undefined) profil.plan = changements.plan
     profil.majLe = maintenant()
+
     await ecrire(base)
     return profil
   }

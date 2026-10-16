@@ -54,7 +54,18 @@ export interface DepotMotiq {
   // --- Profils ---------------------------------------------------------
   obtenirProfil(userId: string): Promise<Profil | null>
   creerProfil(profil: Omit<Profil, 'creeLe' | 'majLe'>): Promise<Profil>
-  mettreAJourPlan(userId: string, plan: Profil['plan']): Promise<Profil>
+  /**
+   * Met a jour les champs modifiables d'un profil.
+   *
+   * Remplace l'ancienne `mettreAJourPlan` : un utilisateur doit pouvoir
+   * corriger son nom, pas seulement changer de plan. Les champs autorises sont
+   * volontairement limites — le quota restant, lui, ne se modifie pas depuis
+   * l'interface.
+   */
+  mettreAJourProfil(
+    userId: string,
+    changements: Partial<Pick<Profil, 'nom' | 'plan'>>,
+  ): Promise<Profil>
 
   // --- Projets ---------------------------------------------------------
   listerProjets(userId: string, filtres?: FiltresProjets): Promise<Projet[]>

@@ -256,14 +256,27 @@ export class DepotSupabase implements DepotMotiq {
     return versProfil(data as LigneProfil)
   }
 
-  async mettreAJourPlan(userId: string, plan: Profil['plan']): Promise<Profil> {
+  async mettreAJourProfil(
+    userId: string,
+    changements: Partial<Pick<Profil, 'nom' | 'plan'>>,
+  ): Promise<Profil> {
+    const charge: Record<string, unknown> = {}
+    if (changements.nom !== undefined) charge.nom = changements.nom
+    if (changements.plan !== undefined) charge.plan = changements.plan
+
+    if (Object.keys(charge).length === 0) {
+      const existant = await this.obtenirProfil(userId)
+      if (!existant) throw new Error(`Motiq : profil introuvable (${userId}).`)
+      return existant
+    }
+
     const { data, error } = await this.client
       .from('profiles')
-      .update({ plan })
+      .update(charge)
       .eq('id', userId)
       .select('*')
       .single()
-    verifier(error, 'mise a jour du plan')
+    verifier(error, 'mise a jour du profil')
     return versProfil(data as LigneProfil)
   }
 
