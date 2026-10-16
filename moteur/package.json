@@ -1,0 +1,19 @@
+{
+  "name": "motiq-moteur",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motiq — worker de rendu video (Remotion). Separe de l'application : le rendu ne tourne ni dans le navigateur, ni sur Vercel (cahier des charges 10.1).",
+  "author": "Aboubakr Diomande",
+  "type": "module",
+  "scripts": {
+    "essai": "node essai-rendu.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.536",
+    "@remotion/cli": "^4.0.536",
+    "@remotion/renderer": "^4.0.536",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.536"
+  }
+}

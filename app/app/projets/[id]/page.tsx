@@ -8,6 +8,7 @@ import EditeurScenes from './editeur-scenes'
 import ChoixTemplate from './choix-template'
 import ApparenceProjet from './apparence'
 import ImagesProjet from './images'
+import EntreePieces from './entree'
 import Apercu from './apercu'
 import BoutonGeneration from './bouton-generation'
 
@@ -229,6 +230,14 @@ export default async function PageProjet({ params }: { params: Promise<{ id: str
         <strong>stockage privé</strong> : personne d&apos;autre que toi ne peut les voir.
       </p>
       <ImagesProjet projetId={projet.id} images={images} />
+
+      <h2>4 bis. Tout ce que tu peux apporter</h2>
+      <p className="sous-titre">
+        Fichiers multiples (images, vidéos, <strong>PDF, Word, Excel</strong>, texte), note vocale et
+        photo prise sur le moment. <strong>Motiq lit le contenu des documents</strong> pour comprendre
+        ta demande — il ne se contente pas de les stocker.
+      </p>
+      <EntreePieces projetId={projet.id} />
 
       <h2 id="etape-5">5. L&apos;aperçu</h2>
       <p className="sous-titre">

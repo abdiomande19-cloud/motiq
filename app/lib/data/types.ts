@@ -18,7 +18,8 @@ export type StatutProjet = 'brouillon' | 'script_valide' | 'en_generation' | 'pr
 export type EntreeSource = 'texte' | 'images' | 'voix' | 'video'
 
 /** Nature d'un media rattache a un projet. */
-export type TypeAsset = 'image' | 'audio' | 'video' | 'logo'
+/** Type d'un fichier depose. « document » : PDF, Word, Excel, texte. */
+export type TypeAsset = 'image' | 'audio' | 'video' | 'logo' | 'document'
 
 /** Etats d'un rendu (cahier des charges, chapitre 10.3 : render_jobs). */
 export type StatutRendu = 'en_attente' | 'en_cours' | 'termine' | 'echec'

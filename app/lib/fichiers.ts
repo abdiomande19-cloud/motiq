@@ -20,13 +20,130 @@ import { creerClientServeur } from './supabase/server'
 
 export const BUCKET = 'medias'
 
-/** Types acceptes et taille maximale (2 Mo). */
-export const TYPES_ACCEPTES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
-export const TAILLE_MAX = 2 * 1024 * 1024
+// ============================================================================
+// CE QU'UN UTILISATEUR PEUT DEPOSER
+//
+// Les listes sont volontairement LARGES : un utilisateur qui depose la photo
+// prise par son telephone ne doit pas se heurter a un refus parce que son
+// appareil produit de l'AVIF ou du HEIC, formats qu'on n'avait pas prevus.
+// Refuser un fichier legitime coute plus cher que d'en accepter un de plus.
+// ============================================================================
 
-/** Sons acceptes, et leur limite (une piste d'une minute suffit). */
-export const TYPES_SON = ['audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/wav', 'audio/ogg']
-export const TAILLE_SON_MAX = 8 * 1024 * 1024
+/** Images : 10 Mo max (maquette ecran 04 : « 2 a 8 photos, 10 Mo maximum »). */
+export const TYPES_IMAGE = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/avif',
+  'image/heic',
+  'image/heif',
+  'image/gif',
+  'image/svg+xml',
+]
+export const TAILLE_IMAGE_MAX = 10 * 1024 * 1024
+
+/** Anciens noms, conserves : le logo et les vignettes deja en place. */
+export const TYPES_ACCEPTES = TYPES_IMAGE
+export const TAILLE_MAX = TAILLE_IMAGE_MAX
+
+/**
+ * Son — musique ET note vocale.
+ *
+ * « audio/webm » N'EST PAS UN DETAIL : c'est le format que produit
+ * l'enregistreur du navigateur (MediaRecorder) quand on enregistre sa voix.
+ * Sans lui, un enregistrement parfaitement reussi etait REFUSE au depot. Le
+ * format que produisent nos propres outils doit figurer dans nos listes.
+ */
+export const TYPES_SON = [
+  'audio/webm',
+  'audio/ogg',
+  'audio/mpeg',
+  'audio/mp4',
+  'audio/x-m4a',
+  'audio/aac',
+  'audio/wav',
+  'audio/wave',
+]
+export const TAILLE_SON_MAX = 25 * 1024 * 1024
+
+/** Videos : formats produits par les telephones et les navigateurs. */
+export const TYPES_VIDEO = [
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+  'video/x-m4v',
+  'video/3gpp',
+  'video/x-matroska',
+]
+export const TAILLE_VIDEO_MAX = 100 * 1024 * 1024
+
+/**
+ * Documents : ce dont l'IA peut LIRE le texte pour comprendre la demande.
+ *
+ * Un fichier qu'on ne sait pas lire est un fichier qu'on ne sait pas exploiter.
+ * Cette liste ne contient donc que des formats que le moteur d'analyse sait
+ * ouvrir (voir lib/analyse.ts).
+ */
+export const TYPES_DOCUMENT = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+  'text/markdown',
+  'application/rtf',
+]
+export const TAILLE_DOCUMENT_MAX = 20 * 1024 * 1024
+
+/** Tout ce qui peut etre joint a une demande. */
+export const TOUS_TYPES = [...TYPES_IMAGE, ...TYPES_VIDEO, ...TYPES_DOCUMENT, ...TYPES_SON]
+
+/** Lit une taille en clair, pour un message utile. */
+export function tailleLisible(octets: number): string {
+  if (octets < 1024) return `${octets} o`
+  if (octets < 1024 * 1024) return `${Math.round(octets / 1024)} Ko`
+  return `${(octets / (1024 * 1024)).toFixed(1).replace('.', ',')} Mo`
+}
+
+/** Devine le type a partir de l'extension, quand le navigateur ne le donne pas. */
+export function typeDepuisNom(nom: string): string {
+  const extension = nom.toLowerCase().split('.').pop() ?? ''
+  const table: Record<string, string> = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp',
+    avif: 'image/avif',
+    heic: 'image/heic',
+    heif: 'image/heif',
+    gif: 'image/gif',
+    svg: 'image/svg+xml',
+    mp4: 'video/mp4',
+    mov: 'video/quicktime',
+    webm: 'video/webm',
+    m4v: 'video/x-m4v',
+    '3gp': 'video/3gpp',
+    mkv: 'video/x-matroska',
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xls: 'application/vnd.ms-excel',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    txt: 'text/plain',
+    md: 'text/markdown',
+    csv: 'text/csv',
+    rtf: 'application/rtf',
+    mp3: 'audio/mpeg',
+    m4a: 'audio/x-m4a',
+    aac: 'audio/aac',
+    wav: 'audio/wav',
+    ogg: 'audio/ogg',
+    oga: 'audio/ogg',
+  }
+  return table[extension] ?? 'application/octet-stream'
+}
 
 export interface ResultatDepot {
   chemin?: string
@@ -56,14 +173,21 @@ export async function deposerFichier(
   } = await supabase.auth.getUser()
 
   if (!user) return { erreur: 'Ta session a expiré. Reconnecte-toi.' }
-  if (fichier.size === 0) return { erreur: 'Le fichier est vide.' }
+  if (fichier.size === 0) return { erreur: `« ${fichier.name} » est vide.` }
   if (fichier.size > options.tailleMax) {
     return {
-      erreur: `Le fichier est trop lourd (${Math.round(fichier.size / 1024)} Ko, maximum ${Math.round(options.tailleMax / 1024)} Ko).`,
+      erreur: `« ${fichier.name} » est trop lourd (${tailleLisible(fichier.size)}, maximum ${tailleLisible(options.tailleMax)}).`,
     }
   }
-  if (!options.types.includes(fichier.type)) {
-    return { erreur: `Format non accepté : ${options.descriptionTypes} uniquement.` }
+
+  // Le navigateur ne remplit pas toujours `type` (HEIC, documents recents).
+  // Se fier alors a l'extension vaut mieux que refuser sur une case vide —
+  // c'est exactement le cas des photos prises avec un telephone.
+  const type = fichier.type || typeDepuisNom(fichier.name)
+  if (!options.types.includes(type)) {
+    return {
+      erreur: `« ${fichier.name} » : format non accepté (${options.descriptionTypes}).`,
+    }
   }
 
   // On nettoie le nom : un nom de fichier est une donnee venue de l'exterieur.
@@ -76,7 +200,7 @@ export async function deposerFichier(
   const chemin = `${user.id}/${dossier}/${Date.now()}-${nomSur}`
 
   const { error } = await supabase.storage.from(BUCKET).upload(chemin, fichier, {
-    contentType: fichier.type,
+    contentType: type,
     upsert: false,
   })
 
@@ -92,6 +216,21 @@ export async function lienSigne(chemin: string | null, secondes = 3600): Promise
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(chemin, secondes)
   if (error) return null
   return data.signedUrl
+}
+
+/**
+ * Telecharge un fichier du stockage, cote serveur, POUR L'ANALYSER.
+ *
+ * A ne pas confondre avec `lienSigne` : celui-ci rend une adresse a ouvrir dans
+ * le navigateur, celle-la rend les OCTETS, pour en extraire le texte. C'est
+ * toute la difference entre « afficher un fichier » et « comprendre ce qu'il
+ * dit ».
+ */
+export async function telecharger(chemin: string): Promise<Buffer | null> {
+  const supabase = await creerClientServeur()
+  const { data, error } = await supabase.storage.from(BUCKET).download(chemin)
+  if (error || !data) return null
+  return Buffer.from(await data.arrayBuffer())
 }
 
 /**
