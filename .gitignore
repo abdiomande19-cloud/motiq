@@ -43,3 +43,6 @@ desktop.ini
 # Les liens signes contiennent un jeton d acces : jamais dans le depot.
 LIEN-VIDEO.txt
 *.log
+# Le jeton Vercel : jamais dans le depot, jamais dans un commit.
+.vercel-token
+.vercel
