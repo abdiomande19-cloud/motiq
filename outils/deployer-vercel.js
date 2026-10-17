@@ -28,7 +28,19 @@ const RACINE = path.join(__dirname, '..')
 const APP = path.join(RACINE, 'app')
 const FICHIER_JETON = path.join(__dirname, '.vercel-token')
 const FICHIER_ENV = path.join(APP, '.env.local')
-const NOM_PROJET = 'motiq'
+/**
+ * Nom du projet Vercel.
+ *
+ * Il vient du DOSSIER, pas d'une option : depuis la CLI 64, « --name » est
+ * obsolete et silencieusement ignore — le deploiement part sous le nom du
+ * repertoire (« app »), et les variables poussees dans « motiq » ne servent a
+ * rien. D'ou un site deploye qui plante en 500 : il tournait sans aucune
+ * variable d'environnement.
+ *
+ * On accepte donc le nom en argument, pour pouvoir viser explicitement le
+ * projet ou vivent les variables.
+ */
+const NOM_PROJET = process.argv[2] || 'app'
 
 /** Les variables a pousser. Les publiques sont lisibles par le navigateur. */
 const VARIABLES = [
@@ -85,13 +97,29 @@ async function principal() {
   const jeton = fs.readFileSync(FICHIER_JETON, 'utf8').trim()
   console.log(`\n   jeton : ${jeton.length} caracteres (valeur masquee)`)
 
+  // ---------------------------------------------------- 0. compte et equipe
+  // Le jeton appartient a une EQUIPE, pas a un compte personnel. Sans le
+  // teamId, toutes les operations visent le compte perso et echouent avec un
+  // « not found » trompeur : le projet existe, mais pas la ou on le cherche.
+  const moi = await api(jeton, '/v2/user')
+  if (moi.code >= 400) {
+    console.error(`   !! jeton refuse (HTTP ${moi.code})`)
+    process.exit(1)
+  }
+  const equipeId = moi.corps?.user?.defaultTeamId ?? null
+  console.log(`   compte : ${moi.corps?.user?.username ?? moi.corps?.user?.email ?? 'inconnu'}`)
+  console.log(`   equipe : ${equipeId ?? 'aucune (compte personnel)'}`)
+
+  const suffixe = equipeId ? `?teamId=${equipeId}` : ''
+  const et = (chemin) => `${chemin}${chemin.includes('?') ? '&' : '?'}${equipeId ? `teamId=${equipeId}` : ''}`
+
   const env = lireEnv(FICHIER_ENV)
 
   // ------------------------------------------------------------- 1. projet
   console.log('\n1) PROJET VERCEL')
-  let projet = (await api(jeton, `/v9/projects/${NOM_PROJET}`)).corps
+  let projet = (await api(jeton, et(`/v9/projects/${NOM_PROJET}`))).corps
   if (!projet || projet.error) {
-    const creation = await api(jeton, '/v11/projects', {
+    const creation = await api(jeton, et('/v11/projects'), {
       method: 'POST',
       body: JSON.stringify({ name: NOM_PROJET, framework: 'nextjs' }),
     })
@@ -107,7 +135,7 @@ async function principal() {
 
   // -------------------------------------------------------- 2. variables
   console.log('\n2) VARIABLES D ENVIRONNEMENT')
-  const existantes = (await api(jeton, `/v9/projects/${projet.id}/env`)).corps?.envs ?? []
+  const existantes = (await api(jeton, et(`/v9/projects/${projet.id}/env`))).corps?.envs ?? []
   let poussees = 0
   let manquantes = 0
 
@@ -123,10 +151,10 @@ async function principal() {
     // absence. Le site tournerait avec un ancien secret sans que rien ne le
     // signale, et on chercherait longtemps.
     for (const ancienne of existantes.filter((e) => e.key === v.cle)) {
-      await api(jeton, `/v9/projects/${projet.id}/env/${ancienne.id}`, { method: 'DELETE' })
+      await api(jeton, et(`/v9/projects/${projet.id}/env/${ancienne.id}`), { method: 'DELETE' })
     }
 
-    const r = await api(jeton, `/v10/projects/${projet.id}/env`, {
+    const r = await api(jeton, et(`/v10/projects/${projet.id}/env`), {
       method: 'POST',
       body: JSON.stringify({
         key: v.cle,
@@ -153,25 +181,36 @@ async function principal() {
   console.log('\n3) CONSTRUCTION DE LA PREVIEW')
   console.log('   (compte 1 a 3 minutes)')
 
-  const vercelCmd = path.join(
+  // On appelle le JAVASCRIPT de la CLI, pas le fichier « vercel.cmd ».
+  //
+  // execFileSync refuse de lancer un .cmd sous Windows depuis Node 26 : la
+  // protection contre une faille (contournement de shell par des .bat/.cmd)
+  // fait echouer l'appel avec EINVAL, AVANT meme d'atteindre Vercel, et sans
+  // le moindre message. On contourne proprement en executant le point d'entree
+  // JavaScript avec l'interpreteur courant : aucune couche de shell.
+  const vercelCli = path.join(
     process.env.LOCALAPPDATA ?? '',
     'hermes',
     'tools',
     'node-26.7.0-win32-x64',
-    'vercel.cmd',
+    'node_modules',
+    'vercel',
+    'dist',
+    'vc.js',
   )
 
   let sortie = ''
   try {
     sortie = execFileSync(
-      vercelCmd,
-      ['deploy', '--yes', '--token', jeton, '--name', NOM_PROJET],
+      process.execPath,
+      [vercelCli, 'deploy', '--yes', '--token', jeton, '--scope', equipeId ?? '', ...(equipeId ? [] : [])].filter(Boolean),
       { cwd: APP, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 600_000 },
     )
   } catch (erreur) {
     sortie = `${erreur.stdout ?? ''}\n${erreur.stderr ?? ''}`
     console.error('\n   !! Le deploiement a echoue.')
-    console.error(sortie.split('\n').slice(-25).join('\n'))
+    if (erreur.code) console.error(`   code : ${erreur.code}`)
+    console.error(sortie.split('\n').slice(-25).join('\n') || '(aucune sortie)')
     process.exit(1)
   }
 
