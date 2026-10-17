@@ -185,9 +185,9 @@ export default function Apercu({ scenes, apparence, template, couleurParDefaut =
       </div>
 
       <div className="note">
-        <strong>Ce que tu vois n&apos;est pas la vidéo finale.</strong> Le rendu MP4 demande un
-        moteur qui n&apos;est pas encore branché. Mais tout le reste est le tien : ce texte, ces
-        couleurs, cette police, ce rythme.
+        <strong>Ceci est un aperçu, pas le fichier final.</strong> Cette animation tourne dans ton
+        navigateur : elle te montre le texte, les couleurs, la police et le rythme. Le vrai MP4 se
+        fabrique à l&apos;étape 6 « La génération », et il te faudra compter une à deux minutes.
       </div>
     </>
   )

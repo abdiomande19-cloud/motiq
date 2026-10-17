@@ -259,7 +259,9 @@ export default async function AccueilVisiteur() {
           <tr>
             <td>Génération vidéo</td>
             <td>
-              Pas encore branchée — détail sur la <Link href="/etat">page état</Link>
+              Disponible — le moteur fabrique un MP4 vertical 1080&nbsp;×&nbsp;1920. À lancer depuis
+              l&apos;étape 6 d&apos;un projet, résultat en une à deux minutes. Détail sur la{' '}
+              <Link href="/etat">page état</Link>
             </td>
           </tr>
         </tbody>
