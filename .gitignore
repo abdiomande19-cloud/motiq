@@ -39,3 +39,7 @@ desktop.ini
 # artefacts de livraison (ne pas versionner)
 *.bundle
 *.zip
+
+# Les liens signes contiennent un jeton d acces : jamais dans le depot.
+LIEN-VIDEO.txt
+*.log
