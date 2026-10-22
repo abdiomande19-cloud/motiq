@@ -1081,6 +1081,72 @@ h3 {
 }
 
 /* ============================================================================
+   BOUTON GOOGLE
+   ========================================================================= */
+
+.bouton-google-bloc {
+  margin-bottom: 6px;
+}
+
+.bouton-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--rayon);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--texte);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.bouton-google:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.bouton-google:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* L'icone garde ses couleurs officielles : c'est une exigence de la charte
+   Google, et un logo repeint en degrade fait perdre la confiance au moment
+   precis ou on la demande. */
+.bouton-google-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+.separateur-ou {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 6px;
+  color: var(--texte-faible);
+  font-size: 13px;
+}
+
+.separateur-ou::before,
+.separateur-ou::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
    ADAPTATION AUX PETITS ECRANS
    ========================================================================= */
 

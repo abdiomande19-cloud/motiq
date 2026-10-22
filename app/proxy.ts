@@ -28,6 +28,17 @@ import { createServerClient } from '@supabase/ssr'
  */
 const PAGES_PRIVEES = ['/projets', '/tableau-de-bord', '/reglages', '/kit-marque', '/abonnement', '/moderation']
 
+/**
+ * Routes TOUJOURS accessibles, meme sans session.
+ *
+ * /auth/callback en fait partie et c'est essentiel : c'est l'adresse vers
+ * laquelle Google renvoie apres connexion. Si on la protegeait, le visiteur
+ * serait renvoye vers /connexion AVANT d'avoir pu echanger son code — donc
+ * en boucle, sans jamais pouvoir se connecter. Un retour OAuth est, par
+ * nature, une requete encore anonyme.
+ */
+const PAGES_PUBLIQUES = ['/auth/callback']
+
 export async function proxy(request: NextRequest) {
   let reponse = NextResponse.next({ request })
 
@@ -63,8 +74,11 @@ export async function proxy(request: NextRequest) {
 
   const chemin = request.nextUrl.pathname
   const estPrivee = PAGES_PRIVEES.some((p) => chemin === p || chemin.startsWith(`${p}/`))
+  // Une route publique l'emporte, meme si elle se trouvait un jour sous un
+  // chemin prive : c'est le cas du retour OAuth, qui doit passer sans session.
+  const estPublique = PAGES_PUBLIQUES.some((p) => chemin === p || chemin.startsWith(`${p}/`))
 
-  if (!user && estPrivee) {
+  if (!user && estPrivee && !estPublique) {
     const cible = request.nextUrl.clone()
     cible.pathname = '/connexion'
     cible.searchParams.set('suite', chemin)
